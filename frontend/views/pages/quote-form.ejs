@@ -1,0 +1,300 @@
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h3 class="text-2xl font-bold text-gray-800" id="form-title">Nueva Cotización</h3>
+        <button onclick="saveQuote()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-sm font-bold flex items-center">
+            <i class="fas fa-save mr-2"></i> Guardar Cotización
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Form -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h4 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">Información General</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Cliente *</label>
+                        <select id="cliente_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Seleccione un cliente</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Atención a</label>
+                        <input type="text" id="contacto_cliente" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Fecha de Vencimiento *</label>
+                        <input type="date" id="fecha_vencimiento" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Validez</label>
+                        <input type="text" id="validez" placeholder="Ej. 15 días naturales" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items -->
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h4 class="text-lg font-bold text-gray-700">Partidas</h4>
+                    <button onclick="addItem()" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                        <i class="fas fa-plus-circle mr-1"></i> Agregar Partida
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="pb-2 w-16">Cant.</th>
+                                <th class="pb-2 w-24">Unidad</th>
+                                <th class="pb-2">Descripción</th>
+                                <th class="pb-2 w-32">P. Unitario</th>
+                                <th class="pb-2 w-32">Importe</th>
+                                <th class="pb-2 w-10"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body">
+                            <!-- Items will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="no-items" class="text-center py-8 text-gray-400">
+                    No hay partidas agregadas.
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Config -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h4 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">Resumen</h4>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Subtotal:</span>
+                        <span id="subtotal-display" class="font-medium">$0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">IVA (16%):</span>
+                        <span id="iva-display" class="font-medium">$0.00</span>
+                    </div>
+                    <div class="flex justify-between border-t pt-3">
+                        <span class="text-lg font-bold text-gray-800">Total:</span>
+                        <span id="total-display" class="text-lg font-bold text-blue-600">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h4 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">Condiciones</h4>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Condiciones de Pago</label>
+                        <textarea id="condiciones_pago" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Notas Adicionales</label>
+                        <textarea id="notas" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const quoteId = window.location.pathname.includes('/editar/') ? window.location.pathname.split('/').pop() : null;
+    let items = [];
+    let clients = [];
+    let products = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        ui.setTitle(quoteId ? 'Editar Cotización' : 'Nueva Cotización');
+        if (quoteId) document.getElementById('form-title').innerText = 'Editar Cotización';
+        
+        loadInitialData();
+        
+        if (!quoteId) {
+            const expiry = new Date();
+            expiry.setDate(expiry.getDate() + 15);
+            document.getElementById('fecha_vencimiento').value = expiry.toISOString().split('T')[0];
+        }
+    });
+
+    async function loadInitialData() {
+        try {
+            const [resClients, resProducts] = await Promise.all([
+                axios.get('/api/clientes'),
+                axios.get('/api/productos?limit=100')
+            ]);
+            
+            clients = resClients.data;
+            products = resProducts.data.products || resProducts.data;
+
+            const clientSelect = document.getElementById('cliente_id');
+            clients.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.nombre;
+                clientSelect.appendChild(opt);
+            });
+
+            if (quoteId) {
+                loadQuoteData();
+            }
+        } catch (error) {
+            ui.toast('Error al cargar datos iniciales', 'error');
+        }
+    }
+
+    async function loadQuoteData() {
+        try {
+            const res = await axios.get(`/api/cotizaciones/${quoteId}`);
+            const quote = res.data;
+
+            document.getElementById('cliente_id').value = quote.cliente_id;
+            document.getElementById('contacto_cliente').value = quote.contacto_cliente || '';
+            document.getElementById('fecha_vencimiento').value = quote.fecha_vencimiento.split('T')[0];
+            document.getElementById('validez').value = quote.validez || '';
+            document.getElementById('condiciones_pago').value = quote.condiciones_pago || '';
+            document.getElementById('notas').value = quote.notas || '';
+
+            items = quote.items.map(item => ({
+                id: Date.now() + Math.random(),
+                cantidad: item.cantidad,
+                unidad: item.unidad,
+                descripcion: item.descripcion,
+                precio_unitario: item.precio_unitario,
+                subtotal: item.subtotal
+            }));
+
+            renderItems();
+        } catch (error) {
+            ui.toast('Error al cargar datos de la cotización', 'error');
+        }
+    }
+
+    function addItem() {
+        const id = Date.now();
+        const item = {
+            id,
+            cantidad: 1,
+            unidad: 'PZA',
+            descripcion: '',
+            precio_unitario: 0,
+            subtotal: 0
+        };
+        items.push(item);
+        renderItems();
+    }
+
+    function removeItem(id) {
+        items = items.filter(i => i.id !== id);
+        renderItems();
+    }
+
+    function updateItem(id, field, value) {
+        const item = items.find(i => i.id === id);
+        if (!item) return;
+
+        if (field === 'cantidad' || field === 'precio_unitario') {
+            item[field] = parseFloat(value) || 0;
+            item.subtotal = item.cantidad * item.precio_unitario;
+        } else {
+            item[field] = value;
+        }
+        
+        document.getElementById(`subtotal-${id}`).innerText = ui.formatCurrency(item.subtotal);
+        calculateTotals();
+    }
+
+    function renderItems() {
+        const body = document.getElementById('items-body');
+        const noItems = document.getElementById('no-items');
+        
+        if (items.length === 0) {
+            noItems.classList.remove('hidden');
+            body.innerHTML = '';
+        } else {
+            noItems.classList.add('hidden');
+            body.innerHTML = items.map(item => `
+                <tr class="border-b border-gray-100 last:border-0">
+                    <td class="py-3">
+                        <input type="number" step="any" value="${item.cantidad}" onchange="updateItem(${item.id}, 'cantidad', this.value)" class="w-full px-2 py-1 border rounded">
+                    </td>
+                    <td class="py-3">
+                        <input type="text" value="${item.unidad}" onchange="updateItem(${item.id}, 'unidad', this.value)" class="w-full px-2 py-1 border rounded">
+                    </td>
+                    <td class="py-3">
+                        <input type="text" value="${item.descripcion}" onchange="updateItem(${item.id}, 'descripcion', this.value)" class="w-full px-2 py-1 border rounded" list="product-list">
+                    </td>
+                    <td class="py-3">
+                        <input type="number" step="any" value="${item.precio_unitario}" onchange="updateItem(${item.id}, 'precio_unitario', this.value)" class="w-full px-2 py-1 border rounded text-right">
+                    </td>
+                    <td class="py-3 text-right font-medium" id="subtotal-${item.id}">
+                        ${ui.formatCurrency(item.subtotal)}
+                    </td>
+                    <td class="py-3 text-center">
+                        <button onclick="removeItem(${item.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        calculateTotals();
+    }
+
+    function calculateTotals() {
+        const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+        const iva = subtotal * 0.16;
+        const total = subtotal + iva;
+
+        document.getElementById('subtotal-display').innerText = ui.formatCurrency(subtotal);
+        document.getElementById('iva-display').innerText = ui.formatCurrency(iva);
+        document.getElementById('total-display').innerText = ui.formatCurrency(total);
+
+        return { subtotal, iva, total };
+    }
+
+    async function saveQuote() {
+        const cliente_id = document.getElementById('cliente_id').value;
+        if (!cliente_id) return ui.toast('Seleccione un cliente', 'warning');
+        if (items.length === 0) return ui.toast('Agregue al menos una partida', 'warning');
+
+        const { subtotal, iva, total } = calculateTotals();
+
+        const data = {
+            cliente_id: parseInt(cliente_id),
+            contacto_cliente: document.getElementById('contacto_cliente').value,
+            fecha_vencimiento: new Date(document.getElementById('fecha_vencimiento').value),
+            validez: document.getElementById('validez').value,
+            condiciones_pago: document.getElementById('condiciones_pago').value,
+            notas: document.getElementById('notas').value,
+            subtotal,
+            iva,
+            total,
+            items: items.map(({ id, ...rest }) => rest)
+        };
+
+        ui.showLoading();
+        try {
+            let res;
+            if (quoteId) {
+                res = await axios.put(`/api/cotizaciones/${quoteId}`, data);
+                ui.toast('Cotización actualizada');
+            } else {
+                res = await axios.post('/api/cotizaciones', data);
+                ui.toast('Cotización guardada');
+            }
+            ui.hideLoading();
+            window.location.href = `/cotizaciones/${res.data.id || quoteId}`;
+        } catch (error) {
+            ui.hideLoading();
+            ui.toast('Error al guardar cotización', 'error');
+        }
+    }
+</script>
+
+<datalist id="product-list">
+    <!-- Fill with products for autocomplete -->
+</datalist>
+
+

@@ -1,0 +1,288 @@
+<div class="space-y-6">
+    <!-- Tabs Header -->
+    <div class="flex space-x-8 border-b border-gray-200">
+        <button id="tab-products" onclick="switchTab('products')" class="tab-btn py-4 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600">Productos</button>
+        <button id="tab-materials" onclick="switchTab('materials')" class="tab-btn py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Materiales</button>
+        <button id="tab-usage" onclick="switchTab('usage')" class="tab-btn py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Uso de Materiales</button>
+    </div>
+
+    <!-- Products View -->
+    <div id="view-products" class="tab-view space-y-6">
+        <div class="flex justify-between items-center">
+            <h3 class="text-2xl font-bold text-gray-800">Productos</h3>
+            <button onclick="openModal('product')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition duration-150 flex items-center">
+                <i class="fas fa-plus mr-2"></i> Nuevo Producto
+            </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100">
+                <div class="relative max-w-md">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="search-product" placeholder="Buscar producto..." 
+                        class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150">
+                </div>
+            </div>
+
+            <div class="relative overflow-x-auto" style="max-height: 500px; overflow-y: auto;">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0 z-10">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 font-bold">Producto</th>
+                            <th scope="col" class="px-6 py-4 font-bold text-center">Stock</th>
+                            <th scope="col" class="px-6 py-4 font-bold text-right">Precio</th>
+                            <th scope="col" class="px-6 py-4 font-bold text-center">Estado</th>
+                            <th scope="col" class="px-6 py-4 font-bold text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-list" class="divide-y divide-gray-100 bg-white"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Materials View -->
+    <div id="view-materials" class="tab-view hidden space-y-6">
+        <div class="flex justify-between items-center">
+            <h3 class="text-2xl font-bold text-gray-800">Materiales</h3>
+            <button onclick="openModal('material')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-sm transition duration-150 flex items-center">
+                <i class="fas fa-plus mr-2"></i> Nuevo Material
+            </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100">
+                <div class="relative max-w-md">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="search-material" placeholder="Buscar material..." 
+                        class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-green-500 focus:border-green-500 sm:text-sm transition duration-150">
+                </div>
+            </div>
+
+            <div class="relative overflow-x-auto" style="max-height: 500px; overflow-y: auto;">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0 z-10">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 font-bold">Material</th>
+                            <th scope="col" class="px-6 py-4 font-bold text-center">Stock</th>
+                            <th scope="col" class="px-6 py-4 font-bold text-right">Costo Unit.</th>
+                            <th scope="col" class="px-6 py-4 font-bold text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="materials-list" class="divide-y divide-gray-100 bg-white"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="item-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 overflow-y-auto h-full w-full z-50 backdrop-blur-sm">
+    <div class="relative top-20 mx-auto p-8 border w-full max-w-lg shadow-2xl rounded-xl bg-white">
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+            <h3 id="modal-title" class="text-xl font-bold text-slate-800">Item</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form id="item-form" class="space-y-5">
+            <input type="hidden" id="item-id">
+            <input type="hidden" id="item-type">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre *</label>
+                <input type="text" id="nombre" required class="block w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Descripción</label>
+                <textarea id="descripcion" rows="3" class="block w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Categoría</label>
+                    <input type="text" id="categoria" class="block w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Unidad</label>
+                    <input type="text" id="unidad" placeholder="PZA, KG..." class="block w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label id="label-price" class="block text-sm font-semibold text-gray-700 mb-1">Precio *</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+                        <input type="number" step="any" id="precio" required class="block w-full pl-7 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Stock Inicial</label>
+                    <input type="number" id="stock" value="0" class="block w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-6 border-t">
+                <button type="button" onclick="closeModal()" class="px-6 py-2 bg-gray-100 text-gray-600 font-semibold rounded-lg hover:bg-gray-200 transition">Cancelar</button>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 shadow-md transition">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let products = [];
+    let materials = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        ui.setTitle('Gestión de Inventario');
+        loadProducts();
+        loadMaterials();
+
+        document.getElementById('search-product').addEventListener('input', (e) => renderProducts(e.target.value));
+        document.getElementById('search-material').addEventListener('input', (e) => renderMaterials(e.target.value));
+        document.getElementById('item-form').addEventListener('submit', handleSave);
+    });
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.className = 'tab-btn py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300');
+        document.querySelectorAll('.tab-view').forEach(view => view.classList.add('hidden'));
+        
+        const activeBtn = document.getElementById(`tab-${tab}`);
+        activeBtn.className = 'tab-btn py-4 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600';
+        document.getElementById(`view-${tab}`).classList.remove('hidden');
+    }
+
+    async function loadProducts() {
+        try {
+            const res = await axios.get('/api/productos?limit=1000');
+            products = res.data.products || res.data;
+            renderProducts();
+        } catch (error) { console.error(error); }
+    }
+
+    async function loadMaterials() {
+        try {
+            const res = await axios.get('/api/materiales');
+            materials = res.data;
+            renderMaterials();
+        } catch (error) { console.error(error); }
+    }
+
+    function renderProducts(search = '') {
+        const filtered = products.filter(p => p.nombre.toLowerCase().includes(search.toLowerCase()) || (p.categoria && p.categoria.toLowerCase().includes(search.toLowerCase())));
+        const list = document.getElementById('products-list');
+        list.innerHTML = filtered.map(p => `
+            <tr class="hover:bg-slate-50 transition duration-150 border-b border-gray-50 last:border-0">
+                <td class="px-6 py-4 font-bold text-slate-800">${p.nombre}</td>
+                <td class="px-6 py-4 text-center"><span class="px-3 py-1 text-xs font-bold rounded-full ${p.stock > 10 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${p.stock}</span></td>
+                <td class="px-6 py-4 text-right font-bold text-green-600">${ui.formatCurrency(p.precio_unitario)}</td>
+                <td class="px-6 py-4 text-center"><span class="px-3 py-1 text-[10px] font-black uppercase rounded-full ${p.estatus ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}">${p.estatus ? 'Activo' : 'Inactivo'}</span></td>
+                <td class="px-6 py-4 text-right">
+                    <button onclick="editItem('product', ${p.id})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteItem('product', ${p.id})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderMaterials(search = '') {
+        const filtered = materials.filter(m => m.nombre.toLowerCase().includes(search.toLowerCase()) || (m.categoria && m.categoria.toLowerCase().includes(search.toLowerCase())));
+        const list = document.getElementById('materials-list');
+        list.innerHTML = filtered.map(m => `
+            <tr class="hover:bg-slate-50 transition duration-150 border-b border-gray-50 last:border-0">
+                <td class="px-6 py-4 font-bold text-slate-800">${m.nombre}</td>
+                <td class="px-6 py-4 text-center"><span class="px-3 py-1 text-xs font-bold rounded-full ${m.stock > 5 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${m.stock}</span></td>
+                <td class="px-6 py-4 text-right font-bold text-blue-600">${ui.formatCurrency(m.costo_unitario)}</td>
+                <td class="px-6 py-4 text-right">
+                    <button onclick="editItem('material', ${m.id})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteItem('material', ${m.id})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openModal(type) {
+        document.getElementById('item-type').value = type;
+        document.getElementById('modal-title').innerText = type === 'product' ? 'Nuevo Producto' : 'Nuevo Material';
+        document.getElementById('label-price').innerText = type === 'product' ? 'Precio Unitario *' : 'Costo Unitario *';
+        document.getElementById('item-id').value = '';
+        document.getElementById('item-form').reset();
+        document.getElementById('item-modal').classList.remove('hidden');
+    }
+
+    function editItem(type, id) {
+        const item = type === 'product' ? products.find(p => p.id === id) : materials.find(m => m.id === id);
+        if (!item) return;
+
+        openModal(type);
+        document.getElementById('modal-title').innerText = type === 'product' ? 'Editar Producto' : 'Editar Material';
+        document.getElementById('item-id').value = item.id;
+        document.getElementById('nombre').value = item.nombre;
+        document.getElementById('descripcion').value = item.descripcion || '';
+        document.getElementById('categoria').value = item.categoria || '';
+        document.getElementById('unidad').value = item.unidad || '';
+        document.getElementById('precio').value = type === 'product' ? item.precio_unitario : item.costo_unitario;
+        document.getElementById('stock').value = item.stock || 0;
+    }
+
+    function closeModal() {
+        document.getElementById('item-modal').classList.add('hidden');
+    }
+
+    async function handleSave(e) {
+        e.preventDefault();
+        const id = document.getElementById('item-id').value;
+        const type = document.getElementById('item-type').value;
+        const data = {
+            nombre: document.getElementById('nombre').value,
+            descripcion: document.getElementById('descripcion').value,
+            categoria: document.getElementById('categoria').value,
+            unidad: document.getElementById('unidad').value,
+            stock: parseInt(document.getElementById('stock').value) || 0
+        };
+
+        if (type === 'product') data.precio_unitario = parseFloat(document.getElementById('precio').value);
+        else data.costo_unitario = parseFloat(document.getElementById('precio').value);
+
+        try {
+            ui.showLoading();
+            if (id) {
+                await axios.put(type === 'product' ? `/api/productos/${id}` : `/api/materiales/${id}`, data);
+                ui.toast('Actualizado con éxito');
+            } else {
+                await axios.post(type === 'product' ? '/api/productos' : '/api/materiales', data);
+                ui.toast('Guardado con éxito');
+            }
+            closeModal();
+            if (type === 'product') await loadProducts();
+            else {
+                await loadMaterials();
+                switchTab('materials'); // Switch to materials tab
+            }
+        } catch (error) {
+            ui.toast('Error al guardar', 'error');
+        } finally {
+            ui.hideLoading();
+        }
+    }
+
+    async function deleteItem(type, id) {
+        const result = await Swal.fire({
+            title: '¿Eliminar item?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.delete(type === 'product' ? `/api/productos/${id}` : `/api/materiales/${id}`);
+                ui.toast('Eliminado');
+                if (type === 'product') loadProducts();
+                else loadMaterials();
+            } catch (error) { ui.toast('Error al eliminar', 'error'); }
+        }
+    }
+</script>

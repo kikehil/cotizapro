@@ -1,0 +1,384 @@
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div class="flex items-center">
+            <a href="/cotizaciones" class="text-gray-500 hover:text-gray-700 mr-4">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h3 class="text-2xl font-bold text-gray-800" id="quote-folio">Cargando...</h3>
+        </div>
+        <div class="flex space-x-2">
+            <button onclick="downloadPDF()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition duration-150 flex items-center">
+                <i class="fas fa-file-pdf mr-2"></i> PDF
+            </button>
+            <button onclick="sendEmail()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg transition duration-150 flex items-center">
+                <i class="fas fa-envelope mr-2"></i> Enviar
+            </button>
+            <div id="status-actions" class="flex space-x-2">
+                <!-- Status specific actions like Aceptar/Rechazar will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Header Info -->
+            <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex justify-between mb-8">
+                    <div>
+                        <h4 class="text-gray-500 uppercase text-xs font-bold tracking-wider mb-1">Cliente</h4>
+                        <p id="client-name" class="text-lg font-bold text-gray-800"></p>
+                        <p id="client-rfc" class="text-sm text-gray-600"></p>
+                        <p id="client-email" class="text-sm text-gray-600"></p>
+                    </div>
+                    <div class="text-right">
+                        <span id="quote-status" class="px-3 py-1 text-sm font-bold rounded-full"></span>
+                        <div class="mt-4 text-right">
+                            <p class="text-sm text-gray-600">Fecha: <span id="quote-date" class="font-medium"></span></p>
+                            <p class="text-sm text-gray-600">Vence: <span id="quote-expiry" class="font-medium text-red-600"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="w-full mb-10">
+                    <thead>
+                        <tr class="border-b border-gray-200 text-left text-xs font-bold text-gray-400 uppercase">
+                            <th class="pb-3 w-16 text-center">Cant.</th>
+                            <th class="pb-3 w-20 text-center">Ud.</th>
+                            <th class="pb-3">Descripción</th>
+                            <th class="pb-3 w-32 text-right">Precio</th>
+                            <th class="pb-3 w-32 text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-body" class="divide-y divide-gray-100">
+                        <!-- Items -->
+                    </tbody>
+                </table>
+
+                <div class="flex justify-end">
+                    <div class="w-full max-w-xs space-y-3">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Subtotal</span>
+                            <span id="quote-subtotal" class="font-medium"></span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>IVA (16%)</span>
+                            <span id="quote-iva" class="font-medium"></span>
+                        </div>
+                        <div class="flex justify-between text-xl font-bold text-gray-800 border-t pt-3">
+                            <span>Total</span>
+                            <span id="quote-total" class="text-blue-600"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h4 class="font-bold text-gray-700 mb-2">Notas y Condiciones</h4>
+                <p id="quote-notes" class="text-gray-600 whitespace-pre-line text-sm italic"></p>
+            </div>
+
+            <!-- Invoice Section (Visible if accepted) -->
+            <div id="invoice-section" class="hidden bg-blue-50 p-6 rounded-lg border border-blue-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="font-bold text-blue-800 flex items-center">
+                        <i class="fas fa-file-invoice mr-2"></i> Información de Facturación
+                    </h4>
+                    <button onclick="openInvoiceModal()" class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                        Actualizar Factura
+                    </button>
+                </div>
+                <div id="invoice-info" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-xs text-blue-600 font-bold uppercase">No. Factura</p>
+                        <p id="inv-number" class="text-sm font-medium text-gray-800">No asignada</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-blue-600 font-bold uppercase">Estado</p>
+                        <span id="inv-status" class="px-2 py-0.5 text-xs font-bold rounded-full"></span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a id="inv-pdf" href="#" target="_blank" class="hidden text-red-600 hover:text-red-800" title="Descargar PDF">
+                            <i class="fas fa-file-pdf fa-lg"></i>
+                        </a>
+                        <a id="inv-xml" href="#" target="_blank" class="hidden text-blue-600 hover:text-blue-800" title="Descargar XML">
+                            <i class="fas fa-file-code fa-lg"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History / Sidebar -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h4 class="font-bold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-history mr-2"></i> Historial
+                </h4>
+                <div id="events-timeline" class="space-y-4">
+                    <!-- Events -->
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h4 class="font-bold text-gray-700 mb-4">Link Público</h4>
+                <div class="flex">
+                    <input type="text" id="public-link" readonly class="bg-gray-50 flex-1 border border-gray-300 rounded-l-md px-3 py-2 text-xs">
+                    <button onclick="copyLink()" class="bg-blue-600 text-white px-3 py-2 rounded-r-md hover:bg-blue-700">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-2">Envía este link a tu cliente para que acepte la cotización.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Invoice Modal -->
+<div id="invoice-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Datos de Factura</h3>
+            <button onclick="closeInvoiceModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="invoice-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Número de Factura *</label>
+                <input type="text" id="numero_factura" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Estado de Pago</label>
+                <select id="invoice_estatus" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Pagada">Pagada</option>
+                    <option value="Cancelada">Cancelada</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Archivo PDF</label>
+                <input type="file" id="pdf_file" accept=".pdf" class="mt-1 block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Archivo XML</label>
+                <input type="file" id="xml_file" accept=".xml" class="mt-1 block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" onclick="closeInvoiceModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const quoteId = window.location.pathname.split('/').pop();
+    let quote = null;
+    let currentInvoice = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        ui.setTitle('Detalle de Cotización');
+        loadQuote();
+    });
+
+    async function loadQuote() {
+        try {
+            const res = await axios.get(`/api/cotizaciones/${quoteId}`);
+            quote = res.data;
+            renderQuote();
+            if (quote.estado === 'Aceptada') {
+                loadInvoice();
+            }
+        } catch (error) {
+            ui.toast('Error al cargar cotización', 'error');
+        }
+    }
+
+    async function loadInvoice() {
+        try {
+            const res = await axios.get(`/api/facturas/cotizacion/${quoteId}`);
+            currentInvoice = res.data;
+            const section = document.getElementById('invoice-section');
+            section.classList.remove('hidden');
+
+            if (currentInvoice) {
+                document.getElementById('inv-number').innerText = currentInvoice.numero_factura;
+                const statusEl = document.getElementById('inv-status');
+                statusEl.innerText = currentInvoice.estatus;
+                statusEl.className = `px-2 py-0.5 text-xs font-bold rounded-full ${getStatusBadgeClass(currentInvoice.estatus)}`;
+                
+                if (currentInvoice.pdf_url) {
+                    const pdfLink = document.getElementById('inv-pdf');
+                    pdfLink.href = currentInvoice.pdf_url;
+                    pdfLink.classList.remove('hidden');
+                }
+                if (currentInvoice.xml_url) {
+                    const xmlLink = document.getElementById('inv-xml');
+                    xmlLink.href = currentInvoice.xml_url;
+                    xmlLink.classList.remove('hidden');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading invoice:', error);
+        }
+    }
+
+    function getStatusBadgeClass(status) {
+        switch(status) {
+            case 'Pagada': return 'bg-green-100 text-green-800';
+            case 'Pendiente': return 'bg-yellow-100 text-yellow-800';
+            case 'Cancelada': return 'bg-red-100 text-red-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    }
+
+    function openInvoiceModal() {
+        if (currentInvoice) {
+            document.getElementById('numero_factura').value = currentInvoice.numero_factura;
+            document.getElementById('invoice_estatus').value = currentInvoice.estatus;
+        }
+        document.getElementById('invoice-modal').classList.remove('hidden');
+    }
+
+    function closeInvoiceModal() {
+        document.getElementById('invoice-modal').classList.add('hidden');
+    }
+
+    document.getElementById('invoice-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('numero_factura', document.getElementById('numero_factura').value);
+        formData.append('estatus', document.getElementById('invoice_estatus').value);
+        
+        const pdfFile = document.getElementById('pdf_file').files[0];
+        if (pdfFile) formData.append('pdf', pdfFile);
+        
+        const xmlFile = document.getElementById('xml_file').files[0];
+        if (xmlFile) formData.append('xml', xmlFile);
+
+        ui.showLoading();
+        try {
+            await axios.post(`/api/facturas/cotizacion/${quoteId}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            ui.hideLoading();
+            ui.toast('Factura guardada correctamente');
+            closeInvoiceModal();
+            loadInvoice();
+            loadQuote(); // Refresh events
+        } catch (error) {
+            ui.hideLoading();
+            ui.toast(error.response?.data?.message || 'Error al guardar factura', 'error');
+        }
+    });
+
+    function renderQuote() {
+        document.getElementById('quote-folio').innerText = quote.folio;
+        document.getElementById('client-name').innerText = quote.cliente.nombre;
+        document.getElementById('client-rfc').innerText = `RFC: ${quote.cliente.rfc || 'N/A'}`;
+        document.getElementById('client-email').innerText = quote.cliente.email || '';
+        document.getElementById('quote-date').innerText = ui.formatDate(quote.fecha);
+        document.getElementById('quote-expiry').innerText = ui.formatDate(quote.fecha_vencimiento);
+        document.getElementById('quote-subtotal').innerText = ui.formatCurrency(quote.subtotal);
+        document.getElementById('quote-iva').innerText = ui.formatCurrency(quote.iva);
+        document.getElementById('quote-total').innerText = ui.formatCurrency(quote.total);
+        document.getElementById('quote-notes').innerText = quote.notas || 'Sin notas adicionales.';
+        
+        const statusEl = document.getElementById('quote-status');
+        const color = getStatusColor(quote.estado);
+        statusEl.innerText = quote.estado;
+        statusEl.className = `px-3 py-1 text-sm font-bold rounded-full bg-${color}-100 text-${color}-800`;
+
+        document.getElementById('items-body').innerHTML = quote.items.map(item => `
+            <tr>
+                <td class="py-4 text-center text-sm text-gray-600">${item.cantidad}</td>
+                <td class="py-4 text-center text-sm text-gray-600">${item.unidad || 'PZA'}</td>
+                <td class="py-4 text-sm text-gray-800 font-medium">${item.descripcion}</td>
+                <td class="py-4 text-right text-sm text-gray-600">${ui.formatCurrency(item.precio_unitario)}</td>
+                <td class="py-4 text-right text-sm font-bold text-gray-800">${ui.formatCurrency(item.subtotal)}</td>
+            </tr>
+        `).join('');
+
+        document.getElementById('events-timeline').innerHTML = quote.events.map(event => `
+            <div class="border-l-2 border-blue-200 pl-4 py-1 relative">
+                <div class="absolute -left-1.5 top-2 w-3 h-3 bg-blue-500 rounded-full"></div>
+                <p class="text-xs text-gray-500">${ui.formatDate(event.fecha)}</p>
+                <p class="text-sm text-gray-800">${event.descripcion_evento}</p>
+                ${event.user ? `<p class="text-[10px] text-gray-400">Por: ${event.user.nombre}</p>` : ''}
+            </div>
+        `).join('');
+
+        document.getElementById('public-link').value = `${window.location.origin}/cotizacion/${quoteId}/public`;
+        
+        renderActions();
+    }
+
+    function renderActions() {
+        const actionsEl = document.getElementById('status-actions');
+        actionsEl.innerHTML = '';
+        
+        if (quote.estado !== 'Aceptada') {
+            actionsEl.innerHTML += `
+                <a href="/cotizaciones/editar/${quoteId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 flex items-center">
+                    <i class="fas fa-edit mr-2"></i> Editar
+                </a>
+            `;
+        }
+
+        if (quote.estado === 'Pendiente' || quote.estado === 'Enviada') {
+            actionsEl.innerHTML += `
+                <button onclick="updateStatus('Aceptada')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-150">Aceptar</button>
+                <button onclick="updateStatus('Rechazada')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-150">Rechazar</button>
+            `;
+        }
+    }
+
+    async function updateStatus(estado) {
+        try {
+            await axios.put(`/api/cotizaciones/${quoteId}/estado`, { estado });
+            ui.toast(`Estado actualizado a ${estado}`);
+            loadQuote();
+        } catch (error) {
+            ui.toast('Error al actualizar estado', 'error');
+        }
+    }
+
+    async function downloadPDF() {
+        const token = auth.getToken();
+        window.open(`/api/cotizaciones/${quoteId}/pdf?token=${token}`, '_blank');
+    }
+
+    async function sendEmail() {
+        ui.showLoading();
+        try {
+            await axios.post(`/api/cotizaciones/${quoteId}/enviar-correo`);
+            ui.hideLoading();
+            ui.toast('Correo enviado con éxito');
+            loadQuote();
+        } catch (error) {
+            ui.hideLoading();
+            ui.toast('Error al enviar correo', 'error');
+        }
+    }
+
+    function copyLink() {
+        const copyText = document.getElementById("public-link");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
+        ui.toast('Link copiado al portapapeles');
+    }
+
+    function getStatusColor(status) {
+        switch(status) {
+            case 'Pendiente': return 'yellow';
+            case 'Enviada': return 'blue';
+            case 'Aceptada': return 'green';
+            case 'Rechazada': return 'red';
+            case 'Vencida': return 'gray';
+            default: return 'gray';
+        }
+    }
+</script>
+

@@ -1,0 +1,215 @@
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h3 class="text-2xl font-bold text-gray-800">Clientes</h3>
+        <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition duration-150 flex items-center">
+            <i class="fas fa-plus mr-2"></i> Nuevo Cliente
+        </button>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-4 border-b border-gray-200">
+            <input type="text" id="search-client" placeholder="Buscar cliente..." class="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre / Razón Social</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">RFC</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="clients-list" class="divide-y divide-gray-200">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="client-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 id="modal-title" class="text-xl font-bold text-gray-800">Nuevo Cliente</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="client-form" class="space-y-4">
+            <input type="hidden" id="client-id">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nombre / Razón Social *</label>
+                    <input type="text" id="nombre" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">RFC</label>
+                    <input type="text" id="rfc" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+                    <input type="text" id="telefono" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Dirección</label>
+                    <input type="text" id="direccion" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Contacto Principal</label>
+                    <input type="text" id="contacto_principal" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Giro</label>
+                    <input type="text" id="giro" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Notas</label>
+                    <textarea id="notas" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let clients = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        ui.setTitle('Clientes');
+        loadClients();
+
+        document.getElementById('search-client').addEventListener('input', (e) => {
+            renderClients(e.target.value);
+        });
+
+        document.getElementById('client-form').addEventListener('submit', handleSave);
+    });
+
+    async function loadClients() {
+        try {
+            const res = await axios.get('/api/clientes');
+            clients = res.data;
+            renderClients();
+        } catch (error) {
+            ui.toast('Error al cargar clientes', 'error');
+        }
+    }
+
+    function renderClients(search = '') {
+        const filtered = clients.filter(c => 
+            c.nombre.toLowerCase().includes(search.toLowerCase()) || 
+            (c.rfc && c.rfc.toLowerCase().includes(search.toLowerCase()))
+        );
+
+        const list = document.getElementById('clients-list');
+        list.innerHTML = filtered.map(c => `
+            <tr class="hover:bg-gray-50 transition duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">${c.nombre}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.rfc || 'N/A'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.email || 'N/A'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.telefono || 'N/A'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button onclick="editClient(${c.id})" class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteClient(${c.id})" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openModal() {
+        document.getElementById('modal-title').innerText = 'Nuevo Cliente';
+        document.getElementById('client-id').value = '';
+        document.getElementById('client-form').reset();
+        document.getElementById('client-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('client-modal').classList.add('hidden');
+    }
+
+    function editClient(id) {
+        const client = clients.find(c => c.id === id);
+        if (!client) return;
+
+        document.getElementById('modal-title').innerText = 'Editar Cliente';
+        document.getElementById('client-id').value = client.id;
+        document.getElementById('nombre').value = client.nombre;
+        document.getElementById('rfc').value = client.rfc || '';
+        document.getElementById('email').value = client.email || '';
+        document.getElementById('telefono').value = client.telefono || '';
+        document.getElementById('direccion').value = client.direccion || '';
+        document.getElementById('contacto_principal').value = client.contacto_principal || '';
+        document.getElementById('giro').value = client.giro || '';
+        document.getElementById('notas').value = client.notas || '';
+
+        document.getElementById('client-modal').classList.remove('hidden');
+    }
+
+    async function handleSave(e) {
+        e.preventDefault();
+        const id = document.getElementById('client-id').value;
+        const data = {
+            nombre: document.getElementById('nombre').value,
+            rfc: document.getElementById('rfc').value,
+            email: document.getElementById('email').value,
+            telefono: document.getElementById('telefono').value,
+            direccion: document.getElementById('direccion').value,
+            contacto_principal: document.getElementById('contacto_principal').value,
+            giro: document.getElementById('giro').value,
+            notas: document.getElementById('notas').value,
+        };
+
+        try {
+            if (id) {
+                await axios.put(`/api/clientes/${id}`, data);
+                ui.toast('Cliente actualizado con éxito');
+            } else {
+                await axios.post('/api/clientes', data);
+                ui.toast('Cliente creado con éxito');
+            }
+            closeModal();
+            loadClients();
+        } catch (error) {
+            ui.toast('Error al guardar cliente', 'error');
+        }
+    }
+
+    async function deleteClient(id) {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esto",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.delete(`/api/clientes/${id}`);
+                ui.toast('Cliente eliminado');
+                loadClients();
+            } catch (error) {
+                ui.toast('Error al eliminar cliente', 'error');
+            }
+        }
+    }
+</script>
+
+
+
+
+
+
+

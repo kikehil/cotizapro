@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  VENTAS
+  LECTURA
+}
+
+enum QuoteStatus {
+  Pendiente
+  Enviada
+  Aceptada
+  Rechazada
+  Vencida
+}
+
+enum PaymentStatus {
+  parcial
+  completo
+}
+
+model User {
+  id             Int          @id @default(autoincrement())
+  nombre         String
+  email          String       @unique
+  password       String
+  rol            Role         @default(VENTAS)
+  fecha_creacion DateTime     @default(now())
+  quotes         Quote[]
+  events         QuoteEvent[]
+}
+
+model Client {
+  id                 Int      @id @default(autoincrement())
+  nombre             String
+  rfc                String?
+  telefono           String?
+  email              String?
+  direccion          String?
+  giro               String?
+  contacto_principal String?
+  notas              String?  @db.Text
+  fecha_alta         DateTime @default(now())
+  quotes             Quote[]
+}
+
+model Product {
+  id             Int     @id @default(autoincrement())
+  nombre         String
+  descripcion    String? @db.Text
+  unidad         String?
+  precio_unitario Float
+  stock          Int     @default(0)
+  categoria      String?
+  estatus        Boolean @default(true)
+}
+
+model Material {
+  id             Int      @id @default(autoincrement())
+  nombre         String
+  descripcion    String?  @db.Text
+  unidad         String?
+  costo_unitario Float
+  stock          Int      @default(0)
+  categoria      String?
+  fecha_creacion DateTime @default(now())
+}
+
+model Quote {
+  id                 Int           @id @default(autoincrement())
+  folio              String        @unique
+  fecha              DateTime      @default(now())
+  fecha_vencimiento  DateTime
+  cliente_id         Int
+  cliente            Client        @relation(fields: [cliente_id], references: [id])
+  contacto_cliente   String?
+  condiciones_pago   String?       @db.Text
+  validez            String?
+  notas              String?       @db.Text
+  subtotal           Float
+  iva                Float
+  total              Float
+  estado             QuoteStatus   @default(Pendiente)
+  fecha_envio        DateTime?
+  fecha_aceptacion   DateTime?
+  fecha_rechazo      DateTime?
+  creado_por_id      Int
+  creado_por         User          @relation(fields: [creado_por_id], references: [id])
+  items              QuoteItem[]
+  payments           Payment[]
+  invoices           Invoice[]
+  events             QuoteEvent[]
+}
+
+model QuoteItem {
+  id              Int    @id @default(autoincrement())
+  cotizacion_id   Int
+  quote           Quote  @relation(fields: [cotizacion_id], references: [id], onDelete: Cascade)
+  cantidad        Float
+  unidad          String?
+  descripcion     String @db.Text
+  precio_unitario Float
+  subtotal        Float
+}
+
+model Payment {
+  id                 Int           @id @default(autoincrement())
+  cotizacion_id      Int
+  quote              Quote         @relation(fields: [cotizacion_id], references: [id])
+  monto              Float
+  fecha_pago         DateTime      @default(now())
+  metodo_pago        String
+  referencia         String?
+  archivo_comprobante String?
+  estatus            PaymentStatus @default(completo)
+}
+
+enum InvoiceStatus {
+  Pendiente
+  Pagada
+  Cancelada
+}
+
+model Invoice {
+  id            Int           @id @default(autoincrement())
+  cotizacion_id Int           @unique
+  quote         Quote         @relation(fields: [cotizacion_id], references: [id])
+  numero_factura String
+  fecha_factura  DateTime      @default(now())
+  xml_url       String?
+  pdf_url       String?
+  estatus       InvoiceStatus @default(Pendiente)
+}
+
+model QuoteEvent {
+  id                Int      @id @default(autoincrement())
+  cotizacion_id     Int
+  quote             Quote    @relation(fields: [cotizacion_id], references: [id])
+  usuario_id        Int?
+  user              User?    @relation(fields: [usuario_id], references: [id])
+  descripcion_evento String   @db.Text
+  fecha             DateTime @default(now())
+}
+
+model CompanyConfig {
+  id             Int     @id @default(1)
+  nombre_empresa String
+  rfc            String?
+  telefono       String?
+  email          String?
+  direccion      String? @db.Text
+  logo_url       String?
+}

@@ -1,0 +1,14 @@
+{
+  "ignore": [
+    "uploads/*",
+    "../frontend/*",
+    "node_modules"
+  ],
+  "ext": "js,json,ejs"
+}
+
+
+
+
+
+

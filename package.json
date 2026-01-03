@@ -1,0 +1,20 @@
+{
+  "name": "cotizapro-root",
+  "version": "1.0.0",
+  "description": "Sistema de Cotizaciones",
+  "scripts": {
+    "install:all": "cd backend && npm install",
+    "dev": "cd backend && npm run dev",
+    "start": "cd backend && npm start",
+    "prisma:generate": "cd backend && npx prisma generate",
+    "prisma:migrate": "cd backend && npx prisma migrate dev",
+    "prisma:seed": "cd backend && npm run prisma:seed"
+  }
+}
+
+
+
+
+
+
+

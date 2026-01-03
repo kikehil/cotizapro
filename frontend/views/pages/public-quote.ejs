@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotización | CotizaPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-gray-50 min-h-screen py-10 px-4">
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
+        <!-- Header -->
+        <div id="header-bg" class="bg-slate-800 text-white p-8">
+            <div class="flex justify-between items-start">
+                <div class="flex items-center">
+                    <img id="company-logo" src="" class="h-16 w-auto mr-4 hidden" alt="Logo">
+                    <div>
+                        <h1 id="company-name" class="text-2xl font-bold">...</h1>
+                        <p id="company-info" class="text-sm text-gray-300 mt-1"></p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <h2 class="text-4xl font-black opacity-20">COTIZACIÓN</h2>
+                    <p id="quote-folio" class="text-xl font-bold mt-2"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Cliente</h3>
+                    <p id="client-name" class="text-xl font-bold text-gray-800"></p>
+                    <p id="client-address" class="text-gray-600 text-sm mt-1"></p>
+                </div>
+                <div class="md:text-right">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Detalles</h3>
+                    <p class="text-sm text-gray-600">Fecha: <span id="quote-date" class="font-medium text-gray-800"></span></p>
+                    <p class="text-sm text-gray-600">Válido hasta: <span id="quote-expiry" class="font-medium text-gray-800"></span></p>
+                </div>
+            </div>
+
+            <table class="w-full mb-10">
+                <thead>
+                    <tr class="border-b-2 border-gray-100 text-left text-xs font-bold text-gray-400 uppercase">
+                        <th class="pb-4 w-16 text-center">Cant.</th>
+                        <th class="pb-4">Descripción</th>
+                        <th class="pb-4 w-32 text-right">Unitario</th>
+                        <th class="pb-4 w-32 text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="items-body" class="divide-y divide-gray-100">
+                    <!-- Items -->
+                </tbody>
+            </table>
+
+            <div class="flex flex-col md:flex-row justify-between gap-8">
+                <div class="md:w-1/2">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Notas y Condiciones</h3>
+                    <p id="quote-notes" class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 p-4 rounded-lg italic"></p>
+                </div>
+                <div class="md:w-1/3 space-y-3">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Subtotal</span>
+                        <span id="quote-subtotal" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>IVA (16%)</span>
+                        <span id="quote-iva" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between text-2xl font-bold text-slate-800 border-t-2 border-gray-100 pt-4">
+                        <span>Total</span>
+                        <span id="quote-total" class="text-blue-600"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Public Actions -->
+            <div id="action-panel" class="mt-16 pt-10 border-t border-gray-100 text-center">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">¿Deseas aceptar esta cotización?</h3>
+                <div class="flex flex-col md:flex-row justify-center gap-4 mb-6">
+                    <button onclick="showAcceptModal()" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-bold shadow-lg transition transform hover:scale-105">
+                        <i class="fas fa-check mr-2"></i> Aceptar Cotización
+                    </button>
+                    <button onclick="showRejectModal()" class="bg-white hover:bg-gray-50 text-gray-600 border border-gray-200 px-8 py-3 rounded-full font-bold transition">
+                        <i class="fas fa-times mr-2"></i> Rechazar
+                    </button>
+                </div>
+                <p class="text-gray-400 text-sm">Al aceptar, recibirás una notificación y nos pondremos en contacto contigo.</p>
+            </div>
+
+            <div id="status-message" class="hidden mt-16 pt-10 border-t border-gray-100 text-center">
+                <div id="status-badge" class="inline-block px-6 py-2 rounded-full font-bold text-lg mb-4"></div>
+                <p id="status-text" class="text-gray-600"></p>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 p-6 text-center text-xs text-gray-400">
+            &copy; 2026 <span id="footer-company"></span>. Todos los derechos reservados.
+        </div>
+    </div>
+
+    <script>
+        const quoteId = window.location.pathname.split('/')[2];
+        let quote = null;
+
+        document.addEventListener('DOMContentLoaded', loadPublicQuote);
+
+        async function loadPublicQuote() {
+            try {
+                const res = await axios.get(`/api/cotizaciones/${quoteId}/public`);
+                quote = res.data.quote;
+                const company = res.data.company;
+
+                if (company.logo_url) {
+                    const logoImg = document.getElementById('company-logo');
+                    logoImg.src = company.logo_url;
+                    logoImg.classList.remove('hidden');
+                }
+
+                document.getElementById('company-name').innerText = company.nombre_empresa;
+                document.getElementById('company-info').innerText = `${company.direccion || ''} | Tel: ${company.telefono || ''}`;
+                document.getElementById('footer-company').innerText = company.nombre_empresa;
+                
+                document.getElementById('quote-folio').innerText = quote.folio;
+                document.getElementById('client-name').innerText = quote.cliente.nombre;
+                document.getElementById('client-address').innerText = quote.cliente.direccion || '';
+                document.getElementById('quote-date').innerText = new Date(quote.fecha).toLocaleDateString();
+                document.getElementById('quote-expiry').innerText = new Date(quote.fecha_vencimiento).toLocaleDateString();
+                
+                const formatCurrency = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(val);
+                
+                document.getElementById('quote-subtotal').innerText = formatCurrency(quote.subtotal);
+                document.getElementById('quote-iva').innerText = formatCurrency(quote.iva);
+                document.getElementById('quote-total').innerText = formatCurrency(quote.total);
+                document.getElementById('quote-notes').innerText = quote.notes || 'Sin notas adicionales.';
+
+                document.getElementById('items-body').innerHTML = quote.items.map(item => `
+                    <tr>
+                        <td class="py-4 text-center text-sm text-gray-500 font-mono">${item.cantidad}</td>
+                        <td class="py-4 text-sm text-gray-800 font-medium">${item.descripcion}</td>
+                        <td class="py-4 text-right text-sm text-gray-500">${formatCurrency(item.precio_unitario)}</td>
+                        <td class="py-4 text-right text-sm font-bold text-gray-800">${formatCurrency(item.subtotal)}</td>
+                    </tr>
+                `).join('');
+
+                if (quote.estado !== 'Pendiente' && quote.estado !== 'Enviada') {
+                    showStatus(quote.estado);
+                }
+            } catch (error) {
+                Swal.fire('Error', 'No se pudo cargar la cotización.', 'error');
+            }
+        }
+
+        function showStatus(status) {
+            document.getElementById('action-panel').classList.add('hidden');
+            const badge = document.getElementById('status-badge');
+            const text = document.getElementById('status-text');
+            const panel = document.getElementById('status-message');
+            
+            panel.classList.remove('hidden');
+            
+            if (status === 'Aceptada') {
+                badge.className = 'inline-block px-6 py-2 rounded-full font-bold text-lg mb-4 bg-green-100 text-green-700';
+                badge.innerText = 'COTIZACIÓN ACEPTADA';
+                text.innerText = '¡Gracias por tu confianza! Hemos recibido tu aceptación y estamos procesando tu solicitud.';
+            } else if (status === 'Rechazada') {
+                badge.className = 'inline-block px-6 py-2 rounded-full font-bold text-lg mb-4 bg-red-100 text-red-700';
+                badge.innerText = 'COTIZACIÓN RECHAZADA';
+                text.innerText = 'Esta cotización ha sido rechazada. Si deseas una nueva propuesta, no dudes en contactarnos.';
+            }
+        }
+
+        async function showAcceptModal() {
+            const { value: comments } = await Swal.fire({
+                title: 'Aceptar Cotización',
+                input: 'textarea',
+                inputLabel: '¿Tienes algún comentario o instrucción adicional?',
+                inputPlaceholder: 'Escribe aquí...',
+                showCancelButton: true,
+                confirmButtonText: 'Confirmar Aceptación',
+                confirmButtonColor: '#16a34a',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (comments !== undefined) {
+                try {
+                    await axios.post(`/api/cotizaciones/${quoteId}/aceptar`, { comentarios: comments });
+                    showStatus('Aceptada');
+                    Swal.fire('¡Éxito!', 'La cotización ha sido aceptada.', 'success');
+                } catch (error) {
+                    Swal.fire('Error', 'Hubo un problema al procesar tu solicitud.', 'error');
+                }
+            }
+        }
+
+        async function showRejectModal() {
+            const { value: comments } = await Swal.fire({
+                title: 'Rechazar Cotización',
+                input: 'textarea',
+                inputLabel: 'Por favor, cuéntanos el motivo del rechazo',
+                inputPlaceholder: 'Escribe aquí...',
+                showCancelButton: true,
+                confirmButtonText: 'Confirmar Rechazo',
+                confirmButtonColor: '#dc2626',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (comments !== undefined) {
+                try {
+                    await axios.post(`/api/cotizaciones/${quoteId}/rechazar`, { comentarios: comments });
+                    showStatus('Rechazada');
+                } catch (error) {
+                    Swal.fire('Error', 'Hubo un problema al procesar tu solicitud.', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

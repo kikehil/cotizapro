@@ -1,0 +1,148 @@
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h3 class="text-2xl font-bold text-gray-800">Cotizaciones</h3>
+        <div class="flex space-x-2">
+            <button onclick="downloadStatusReport()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg shadow-sm transition duration-150 flex items-center border border-gray-300">
+                <i class="fas fa-file-pdf mr-2 text-red-600"></i> Reporte PDF
+            </button>
+            <a href="/cotizaciones/nueva" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition duration-150 flex items-center">
+                <i class="fas fa-plus mr-2"></i> Nueva Cotización
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-4 border-b border-gray-200 flex flex-wrap gap-4">
+            <input type="text" id="search-quote" placeholder="Buscar por folio o cliente..." class="flex-1 min-w-[200px] px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+            <select id="filter-status" class="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Todos los estados</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Enviada">Enviada</option>
+                <option value="Aceptada">Aceptada</option>
+                <option value="Rechazada">Rechazada</option>
+                <option value="Vencida">Vencida</option>
+            </select>
+        </div>
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Folio</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="quotes-list" class="divide-y divide-gray-200">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let quotes = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        ui.setTitle('Cotizaciones');
+        loadQuotes();
+
+        document.getElementById('search-quote').addEventListener('input', renderQuotes);
+        document.getElementById('filter-status').addEventListener('change', renderQuotes);
+    });
+
+    async function loadQuotes() {
+        try {
+            const res = await axios.get('/api/cotizaciones');
+            quotes = res.data;
+            renderQuotes();
+        } catch (error) {
+            ui.toast('Error al cargar cotizaciones', 'error');
+        }
+    }
+
+    function renderQuotes() {
+        const search = document.getElementById('search-quote').value.toLowerCase();
+        const status = document.getElementById('filter-status').value;
+
+        const filtered = quotes.filter(q => {
+            const matchesSearch = q.folio.toLowerCase().includes(search) || 
+                                q.cliente.nombre.toLowerCase().includes(search);
+            const matchesStatus = status === '' || q.estado === status;
+            return matchesSearch && matchesStatus;
+        });
+
+        const list = document.getElementById('quotes-list');
+        list.innerHTML = filtered.map(q => `
+            <tr class="hover:bg-gray-50 transition duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
+                    <a href="/cotizaciones/${q.id}">${q.folio}</a>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ui.formatDate(q.fecha)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">${q.cliente.nombre}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">${ui.formatCurrency(q.total)}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(q.estado)}-100 text-${getStatusColor(q.estado)}-800">
+                        ${q.estado}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex justify-end space-x-2">
+                        <button onclick="downloadPDF(${q.id})" title="Descargar PDF" class="text-gray-600 hover:text-gray-900"><i class="fas fa-file-pdf"></i></button>
+                        <button onclick="sendEmail(${q.id})" title="Enviar por correo" class="text-blue-600 hover:text-blue-900"><i class="fas fa-envelope"></i></button>
+                        ${q.estado !== 'Aceptada' ? `
+                            <a href="/cotizaciones/editar/${q.id}" title="Editar" class="text-orange-500 hover:text-orange-700"><i class="fas fa-edit"></i></a>
+                        ` : ''}
+                        <button onclick="duplicateQuote(${q.id})" title="Duplicar" class="text-purple-600 hover:text-purple-900"><i class="fas fa-copy"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function downloadPDF(id) {
+        const token = auth.getToken();
+        window.open(`/api/cotizaciones/${id}/pdf?token=${token}`, '_blank');
+    }
+
+    async function downloadStatusReport() {
+        const token = auth.getToken();
+        window.open(`/api/cotizaciones/reporte/estados?token=${token}`, '_blank');
+    }
+
+    async function sendEmail(id) {
+        ui.showLoading();
+        try {
+            await axios.post(`/api/cotizaciones/${id}/enviar-correo`);
+            ui.hideLoading();
+            ui.toast('Correo enviado con éxito');
+            loadQuotes();
+        } catch (error) {
+            ui.hideLoading();
+            ui.toast('Error al enviar correo', 'error');
+        }
+    }
+
+    async function duplicateQuote(id) {
+        try {
+            const res = await axios.post(`/api/cotizaciones/${id}/duplicar`);
+            ui.toast('Cotización duplicada');
+            window.location.href = `/cotizaciones/${res.data.id}`;
+        } catch (error) {
+            ui.toast('Error al duplicar cotización', 'error');
+        }
+    }
+
+    function getStatusColor(status) {
+        switch(status) {
+            case 'Pendiente': return 'yellow';
+            case 'Enviada': return 'blue';
+            case 'Aceptada': return 'green';
+            case 'Rechazada': return 'red';
+            case 'Vencida': return 'gray';
+            default: return 'gray';
+        }
+    }
+</script>
+
