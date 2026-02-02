@@ -7,7 +7,11 @@ const getSummary = async (req, res, next) => {
       totalQuotes,
       acceptedQuotes,
       totalRevenue,
-      pendingQuotes
+      pendingQuotes,
+      paidInvoicesCount,
+      totalPaidAmount,
+      totalISRRetention,
+      totalUnionRetention
     ] = await Promise.all([
       prisma.quote.count(),
       prisma.quote.count({ where: { estado: 'Aceptada' } }),
@@ -15,7 +19,28 @@ const getSummary = async (req, res, next) => {
         _sum: { total: true },
         where: { estado: 'Aceptada' }
       }),
-      prisma.quote.count({ where: { estado: 'Pendiente' } })
+      prisma.quote.count({ where: { estado: 'Pendiente' } }),
+      prisma.invoice.count({ where: { estatus: 'Pagada' } }),
+      prisma.quote.aggregate({
+        _sum: { total: true },
+        where: {
+          invoices: {
+            some: { estatus: 'Pagada' }
+          }
+        }
+      }),
+      prisma.quote.aggregate({
+        _sum: { retencion: true },
+        where: {
+          invoices: {
+            some: { estatus: 'Pagada' }
+          }
+        }
+      }),
+      prisma.invoice.aggregate({
+        _sum: { retencion_sindical: true },
+        where: { estatus: 'Pagada' }
+      })
     ]);
 
     const latestQuotes = await prisma.quote.findMany({
@@ -34,7 +59,11 @@ const getSummary = async (req, res, next) => {
         totalQuotes,
         acceptedQuotes,
         totalRevenue: totalRevenue._sum.total || 0,
-        pendingQuotes
+        pendingQuotes,
+        paidInvoicesCount,
+        totalPaidAmount: totalPaidAmount._sum.total || 0,
+        totalISRRetention: totalISRRetention._sum.retencion || 0,
+        totalUnionRetention: totalUnionRetention._sum.retencion_sindical || 0
       },
       latestQuotes,
       quotesByStatus
@@ -124,11 +153,37 @@ const getPendingInvoices = async (req, res, next) => {
   }
 };
 
+const getPaidInvoices = async (req, res, next) => {
+  try {
+    const paidInvoices = await prisma.invoice.findMany({
+      where: {
+        estatus: 'Pagada'
+      },
+      include: {
+        quote: {
+          include: {
+            cliente: true
+          }
+        }
+      },
+      orderBy: {
+        fecha_pago: 'desc'
+      },
+      take: 5
+    });
+
+    res.json(paidInvoices);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getSummary,
   getMonthlyQuotes,
   getTopClients,
-  getPendingInvoices
+  getPendingInvoices,
+  getPaidInvoices
 };
 
 

@@ -98,6 +98,12 @@ const quoteTemplate = (quote, company) => {
             <span class="font-semibold">IVA (16%):</span>
             <span>${formatCurrency(quote.iva)}</span>
           </div>
+          ${quote.retencion > 0 ? `
+          <div class="flex justify-between py-1 border-b">
+            <span class="font-semibold">RET ISR (1.25%):</span>
+            <span>${formatCurrency(quote.retencion)}</span>
+          </div>
+          ` : ''}
           <div class="flex justify-between py-2 text-xl font-bold text-blue-600">
             <span>TOTAL:</span>
             <span>${formatCurrency(quote.total)}</span>

@@ -5,10 +5,19 @@ const fs = require('fs');
 const generatePDF = async (htmlContent, outputPath) => {
   let browser;
   try {
-    browser = await puppeteer.launch({
+    const launchOptions = {
       headless: 'new',
       args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    };
+
+    // Usar ejecutable del sistema si está definido en .env
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      // Limpiar comillas si el usuario las puso en el .env
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH.replace(/['"]/g, '');
+      console.log('Usando Chrome en:', launchOptions.executablePath);
+    }
+
+    browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
     
     // Set content - simplified wait condition for speed

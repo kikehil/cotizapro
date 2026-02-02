@@ -6,7 +6,7 @@ const fs = require('fs');
 const createOrUpdateInvoice = async (req, res, next) => {
   try {
     const { id } = req.params; // cotizacion_id
-    const { numero_factura, estatus } = req.body;
+    const { numero_factura, estatus, fecha_pago, retencion_sindical } = req.body;
     
     const quote = await prisma.quote.findUnique({
       where: { id: parseInt(id) }
@@ -16,12 +16,23 @@ const createOrUpdateInvoice = async (req, res, next) => {
     if (quote.estado !== 'Aceptada') {
       return res.status(400).json({ message: 'Solo se pueden facturar cotizaciones aceptadas' });
     }
+    if (!quote.oc_numero) {
+      return res.status(400).json({ message: 'Debe cargar una Orden de Compra (OC) antes de generar la factura' });
+    }
 
     const data = {
       numero_factura,
       estatus: estatus || 'Pendiente',
-      cotizacion_id: parseInt(id)
+      cotizacion_id: parseInt(id),
+      retencion_sindical: parseFloat(retencion_sindical) || 0
     };
+
+    if (estatus === 'Pagada' && fecha_pago) {
+      data.fecha_pago = new Date(fecha_pago);
+    } else {
+      data.fecha_pago = null;
+      data.retencion_sindical = 0;
+    }
 
     if (req.files) {
       if (req.files.pdf) {
@@ -39,11 +50,16 @@ const createOrUpdateInvoice = async (req, res, next) => {
     });
 
     // Create event
+    let descripcion_evento = `Factura ${numero_factura} asignada - Estado: ${estatus}`;
+    if (estatus === 'Pagada' && fecha_pago) {
+      descripcion_evento += ` (Pagada el ${new Date(fecha_pago).toLocaleDateString('es-MX')})`;
+    }
+
     await prisma.quoteEvent.create({
       data: {
         cotizacion_id: parseInt(id),
         usuario_id: req.user.id,
-        descripcion_evento: `Factura ${numero_factura} asignada - Estado: ${estatus}`
+        descripcion_evento
       }
     });
 

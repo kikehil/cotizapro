@@ -22,6 +22,7 @@ const register = async (req, res, next) => {
         email,
         password: hashedPassword,
         rol: rol || 'VENTAS',
+        permisos: JSON.stringify(req.body.permisos || [])
       },
     });
 
@@ -92,10 +93,83 @@ const refresh = async (req, res, next) => {
   }
 };
 
+const getUsers = async (req, res, next) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        rol: true,
+        permisos: true,
+        fecha_creacion: true
+      }
+    });
+    res.json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { nombre, email, rol, permisos, password } = req.body;
+
+    const data = {
+      nombre,
+      email,
+      rol,
+      permisos: JSON.stringify(permisos || [])
+    };
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      data.password = await bcrypt.hash(password, salt);
+    }
+
+    const user = await prisma.user.update({
+      where: { id: parseInt(id) },
+      data
+    });
+
+    res.json({
+      id: user.id,
+      nombre: user.nombre,
+      email: user.email,
+      rol: user.rol,
+      permisos: user.permisos
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    
+    if (parseInt(id) === req.user.id) {
+      return res.status(400).json({ message: 'No puedes eliminar tu propio usuario' });
+    }
+
+    await prisma.user.delete({
+      where: { id: parseInt(id) }
+    });
+
+    res.json({ message: 'Usuario eliminado correctamente' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   refresh,
+  getUsers,
+  updateUser,
+  deleteUser
 };
 
 

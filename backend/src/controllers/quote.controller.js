@@ -25,6 +25,7 @@ const getQuotes = async (req, res, next) => {
     const quotes = await prisma.quote.findMany({
       include: {
         cliente: true,
+        invoices: true,
         creado_por: { select: { nombre: true } }
       },
       orderBy: { fecha: 'desc' }
@@ -405,6 +406,44 @@ const rejectPublicQuote = async (req, res, next) => {
   }
 };
 
+const uploadOC = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { oc_numero } = req.body;
+
+    const quote = await prisma.quote.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!quote) return res.status(404).json({ message: 'Cotización no encontrada' });
+
+    const data = { oc_numero };
+
+    if (req.file) {
+      data.oc_url = `/uploads/ocs/${req.file.filename}`;
+    }
+
+    const updatedQuote = await prisma.quote.update({
+      where: { id: parseInt(id) },
+      data,
+      include: { cliente: true }
+    });
+
+    // Crear evento
+    await prisma.quoteEvent.create({
+      data: {
+        cotizacion_id: parseInt(id),
+        usuario_id: req.user.id,
+        descripcion_evento: `Orden de Compra ${oc_numero} cargada`
+      }
+    });
+
+    res.json(updatedQuote);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const generateStatusReportPDF = async (req, res, next) => {
   try {
     const quotes = await prisma.quote.findMany({
@@ -456,7 +495,8 @@ module.exports = {
   sendQuoteEmail,
   getPublicQuote,
   acceptPublicQuote,
-  rejectPublicQuote
+  rejectPublicQuote,
+  uploadOC
 };
 
 

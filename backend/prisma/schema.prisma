@@ -35,6 +35,7 @@ model User {
   email          String       @unique
   password       String
   rol            Role         @default(VENTAS)
+  permisos       String       @default("[]") // JSON string array of permissions
   fecha_creacion DateTime     @default(now())
   quotes         Quote[]
   events         QuoteEvent[]
@@ -89,7 +90,10 @@ model Quote {
   notas              String?       @db.Text
   subtotal           Float
   iva                Float
+  retencion          Float         @default(0)
   total              Float
+  oc_numero          String?
+  oc_url             String?
   estado             QuoteStatus   @default(Pendiente)
   fecha_envio        DateTime?
   fecha_aceptacion   DateTime?
@@ -138,8 +142,10 @@ model Invoice {
   numero_factura String
   fecha_factura  DateTime      @default(now())
   xml_url       String?
-  pdf_url       String?
-  estatus       InvoiceStatus @default(Pendiente)
+  pdf_url           String?
+  fecha_pago        DateTime?
+  retencion_sindical Float         @default(0)
+  estatus           InvoiceStatus @default(Pendiente)
 }
 
 model QuoteEvent {
