@@ -41,11 +41,31 @@ const ui = {
             icon: icon,
             title: message
         });
+    },
+    initInactivityTimer() {
+        let timer;
+        const timeout = 20 * 60 * 1000; // 20 minutos
+
+        const resetTimer = () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                ui.toast('Sesión cerrada por inactividad', 'info');
+                setTimeout(() => auth.logout(), 1500);
+            }, timeout);
+        };
+
+        // Eventos que reinician el contador
+        window.onload = resetTimer;
+        document.onmousemove = resetTimer;
+        document.onkeypress = resetTimer;
+        document.onclick = resetTimer;
+        document.onscroll = resetTimer;
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     ui.updateUserInfo();
+    ui.initInactivityTimer();
     
     // Highlight active sidebar item
     const currentPath = window.location.pathname;

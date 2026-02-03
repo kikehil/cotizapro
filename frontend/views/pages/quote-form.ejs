@@ -77,6 +77,13 @@
                         <span class="text-gray-600">IVA (16%):</span>
                         <span id="iva-display" class="font-medium">$0.00</span>
                     </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">RET ISR (1.25%):</span>
+                        <div class="flex items-center">
+                            <span class="mr-1 text-gray-500">$</span>
+                            <input type="number" id="retencion" step="any" value="0" onchange="calculateTotals()" class="w-24 px-2 py-1 border rounded text-right text-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
                     <div class="flex justify-between border-t pt-3">
                         <span class="text-lg font-bold text-gray-800">Total:</span>
                         <span id="total-display" class="text-lg font-bold text-blue-600">$0.00</span>
@@ -157,6 +164,7 @@
             document.getElementById('validez').value = quote.validez || '';
             document.getElementById('condiciones_pago').value = quote.condiciones_pago || '';
             document.getElementById('notas').value = quote.notas || '';
+            document.getElementById('retencion').value = quote.retencion || 0;
 
             items = quote.items.map(item => ({
                 id: Date.now() + Math.random(),
@@ -222,7 +230,10 @@
                         <input type="number" step="any" value="${item.cantidad}" onchange="updateItem(${item.id}, 'cantidad', this.value)" class="w-full px-2 py-1 border rounded">
                     </td>
                     <td class="py-3">
-                        <input type="text" value="${item.unidad}" onchange="updateItem(${item.id}, 'unidad', this.value)" class="w-full px-2 py-1 border rounded">
+                        <select onchange="updateItem(${item.id}, 'unidad', this.value)" class="w-full px-2 py-1 border rounded">
+                            <option value="PZA" ${item.unidad === 'PZA' ? 'selected' : ''}>PZA</option>
+                            <option value="SERV" ${item.unidad === 'SERV' ? 'selected' : ''}>SERV</option>
+                        </select>
                     </td>
                     <td class="py-3">
                         <input type="text" value="${item.descripcion}" onchange="updateItem(${item.id}, 'descripcion', this.value)" class="w-full px-2 py-1 border rounded" list="product-list">
@@ -245,13 +256,27 @@
     function calculateTotals() {
         const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
         const iva = subtotal * 0.16;
-        const total = subtotal + iva;
+        
+        // Calcular 1.25% de retención por defecto
+        let retencion = subtotal * 0.0125;
+        
+        // Si el usuario ya editó el campo manualmente, podrías querer respetar su cambio, 
+        // pero aquí lo recalculamos siempre al cambiar partidas. 
+        // Para permitir edición manual pero sugerir el 1.25%:
+        const retInput = document.getElementById('retencion');
+        if (document.activeElement !== retInput) {
+            retInput.value = retencion.toFixed(2);
+        } else {
+            retencion = parseFloat(retInput.value) || 0;
+        }
+
+        const total = subtotal + iva - retencion;
 
         document.getElementById('subtotal-display').innerText = ui.formatCurrency(subtotal);
         document.getElementById('iva-display').innerText = ui.formatCurrency(iva);
         document.getElementById('total-display').innerText = ui.formatCurrency(total);
 
-        return { subtotal, iva, total };
+        return { subtotal, iva, retencion, total };
     }
 
     async function saveQuote() {
@@ -259,7 +284,7 @@
         if (!cliente_id) return ui.toast('Seleccione un cliente', 'warning');
         if (items.length === 0) return ui.toast('Agregue al menos una partida', 'warning');
 
-        const { subtotal, iva, total } = calculateTotals();
+        const { subtotal, iva, retencion, total } = calculateTotals();
 
         const data = {
             cliente_id: parseInt(cliente_id),
@@ -270,6 +295,7 @@
             notas: document.getElementById('notas').value,
             subtotal,
             iva,
+            retencion,
             total,
             items: items.map(({ id, ...rest }) => rest)
         };

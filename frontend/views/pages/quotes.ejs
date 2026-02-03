@@ -5,7 +5,7 @@
             <button onclick="downloadStatusReport()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg shadow-sm transition duration-150 flex items-center border border-gray-300">
                 <i class="fas fa-file-pdf mr-2 text-red-600"></i> Reporte PDF
             </button>
-            <a href="/cotizaciones/nueva" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition duration-150 flex items-center">
+            <a href="/cotizaciones/nueva" id="btn-new-quote" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition duration-150 flex items-center">
                 <i class="fas fa-plus mr-2"></i> Nueva Cotización
             </a>
         </div>
@@ -27,6 +27,8 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Folio</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">OC</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
@@ -47,6 +49,10 @@
     document.addEventListener('DOMContentLoaded', () => {
         ui.setTitle('Cotizaciones');
         loadQuotes();
+
+        if (!auth.hasPermission('crear_cotizacion')) {
+            document.getElementById('btn-new-quote').classList.add('hidden');
+        }
 
         document.getElementById('search-quote').addEventListener('input', renderQuotes);
         document.getElementById('filter-status').addEventListener('change', renderQuotes);
@@ -74,31 +80,48 @@
         });
 
         const list = document.getElementById('quotes-list');
-        list.innerHTML = filtered.map(q => `
-            <tr class="hover:bg-gray-50 transition duration-150">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
-                    <a href="/cotizaciones/${q.id}">${q.folio}</a>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ui.formatDate(q.fecha)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">${q.cliente.nombre}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">${ui.formatCurrency(q.total)}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(q.estado)}-100 text-${getStatusColor(q.estado)}-800">
-                        ${q.estado}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex justify-end space-x-2">
-                        <button onclick="downloadPDF(${q.id})" title="Descargar PDF" class="text-gray-600 hover:text-gray-900"><i class="fas fa-file-pdf"></i></button>
-                        <button onclick="sendEmail(${q.id})" title="Enviar por correo" class="text-blue-600 hover:text-blue-900"><i class="fas fa-envelope"></i></button>
-                        ${q.estado !== 'Aceptada' ? `
-                            <a href="/cotizaciones/editar/${q.id}" title="Editar" class="text-orange-500 hover:text-orange-700"><i class="fas fa-edit"></i></a>
-                        ` : ''}
-                        <button onclick="duplicateQuote(${q.id})" title="Duplicar" class="text-purple-600 hover:text-purple-900"><i class="fas fa-copy"></i></button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        list.innerHTML = filtered.map(q => {
+            const invoice = q.invoices && q.invoices.length > 0 ? q.invoices[0] : null;
+            let ocText = '-';
+            let invText = '-';
+
+            if (q.estado === 'Aceptada') {
+                ocText = q.oc_numero ? q.oc_numero : '<span class="text-red-500 font-bold text-[10px]">SOC</span>';
+                invText = invoice ? invoice.numero_factura : '<span class="text-red-500 font-bold text-[10px]">SF</span>';
+            }
+
+            return `
+                <tr class="hover:bg-gray-50 transition duration-150">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
+                        <a href="/cotizaciones/${q.id}">${q.folio}</a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        ${ocText}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        ${invText}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ui.formatDate(q.fecha)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">${q.cliente.nombre}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">${ui.formatCurrency(q.total)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(q.estado)}-100 text-${getStatusColor(q.estado)}-800">
+                            ${q.estado}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex justify-end space-x-2">
+                            <button onclick="downloadPDF(${q.id})" title="Descargar PDF" class="text-gray-600 hover:text-gray-900"><i class="fas fa-file-pdf"></i></button>
+                            <button onclick="sendEmail(${q.id})" title="Enviar por correo" class="text-blue-600 hover:text-blue-900"><i class="fas fa-envelope"></i></button>
+                            ${q.estado !== 'Aceptada' && auth.hasPermission('crear_cotizacion') ? `
+                                <a href="/cotizaciones/editar/${q.id}" title="Editar" class="text-orange-500 hover:text-orange-700"><i class="fas fa-edit"></i></a>
+                            ` : ''}
+                            <button onclick="duplicateQuote(${q.id})" title="Duplicar" class="text-purple-600 hover:text-purple-900"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
 
     async function downloadPDF(id) {

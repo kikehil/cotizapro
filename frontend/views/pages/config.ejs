@@ -1,49 +1,170 @@
-<div class="space-y-6 max-w-2xl mx-auto">
-    <h3 class="text-2xl font-bold text-gray-800">Configuración de Empresa</h3>
+<div class="space-y-6 max-w-5xl mx-auto">
+    <div class="flex justify-between items-center">
+        <h3 class="text-2xl font-bold text-gray-800">Configuración</h3>
+        <div class="flex space-x-2">
+            <button onclick="showSection('company')" id="btn-company" class="px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white">Empresa</button>
+            <button onclick="showSection('users')" id="btn-users" class="px-4 py-2 rounded-lg font-medium transition-colors bg-gray-200 text-gray-700">Usuarios y Permisos</button>
+        </div>
+    </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <form id="company-form" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Nombre de la Empresa *</label>
-                <input type="text" id="nombre_empresa" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">RFC</label>
-                <input type="text" id="rfc" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Empresa Section -->
+    <div id="section-company" class="section-content">
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h4 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">Datos de la Empresa</h4>
+            <form id="company-form" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Email de contacto</label>
-                    <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-medium text-gray-700">Nombre de la Empresa *</label>
+                    <input type="text" id="nombre_empresa" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                    <input type="text" id="telefono" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-medium text-gray-700">RFC</label>
+                    <input type="text" id="rfc" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Dirección</label>
-                <textarea id="direccion" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">URL del Logo</label>
-                <input type="text" id="logo_url" placeholder="https://..." class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <div class="pt-4 border-t">
-                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-150">
-                    Guardar Configuración
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email de contacto</label>
+                        <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <input type="text" id="telefono" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Dirección</label>
+                    <textarea id="direccion" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">URL del Logo</label>
+                    <input type="text" id="logo_url" placeholder="https://..." class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="pt-4 border-t">
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-150">
+                        Guardar Configuración
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Usuarios Section -->
+    <div id="section-users" class="section-content hidden">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h4 class="text-lg font-bold text-gray-700">Gestión de Usuarios</h4>
+                <button onclick="openUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition duration-150">
+                    <i class="fas fa-user-plus mr-2"></i> Nuevo Usuario
                 </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Permisos</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-list" class="divide-y divide-gray-200">
+                        <!-- Usuarios se cargarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Modal -->
+<div id="user-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-10 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 class="text-xl font-bold text-gray-800" id="user-modal-title">Nuevo Usuario</h3>
+            <button onclick="closeUserModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="user-form" class="space-y-4">
+            <input type="hidden" id="user-id">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Nombre Completo *</label>
+                <input type="text" id="user-nombre" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email *</label>
+                <input type="email" id="user-email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Contraseña <span id="pwd-hint" class="text-xs text-gray-400">(Dejar en blanco para no cambiar)</span></label>
+                <input type="password" id="user-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Rol *</label>
+                <select id="user-rol" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="VENTAS">VENTAS</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="LECTURA">LECTURA</option>
+                </select>
+            </div>
+            
+            <div class="pt-2">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Permisos Específicos</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 bg-gray-50 p-3 rounded-lg border">
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                        <input type="checkbox" name="permiso" value="crear_cotizacion" class="rounded text-blue-600">
+                        <span>Generar Cotizaciones</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                        <input type="checkbox" name="permiso" value="cargar_oc" class="rounded text-blue-600">
+                        <span>Cargar OC</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                        <input type="checkbox" name="permiso" value="cargar_factura" class="rounded text-blue-600">
+                        <span>Cargar Facturas</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                        <input type="checkbox" name="permiso" value="editar_factura" class="rounded text-blue-600">
+                        <span>Editar Estados Factura</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                        <input type="checkbox" name="permiso" value="aceptar_cotizacion" class="rounded text-blue-600">
+                        <span>Aceptar Cotizaciones</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" onclick="closeUserModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold">Guardar Usuario</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
+    let users = [];
+
     document.addEventListener('DOMContentLoaded', () => {
         ui.setTitle('Configuración');
         loadCompany();
-        document.getElementById('company-form').addEventListener('submit', handleSave);
+        loadUsers();
+        document.getElementById('company-form').addEventListener('submit', handleSaveCompany);
+        document.getElementById('user-form').addEventListener('submit', handleSaveUser);
     });
+
+    function showSection(section) {
+        document.querySelectorAll('.section-content').forEach(s => s.classList.add('hidden'));
+        document.getElementById(`section-${section}`).classList.remove('hidden');
+        
+        // Update buttons
+        document.getElementById('btn-company').className = section === 'company' 
+            ? 'px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white' 
+            : 'px-4 py-2 rounded-lg font-medium transition-colors bg-gray-200 text-gray-700';
+        document.getElementById('btn-users').className = section === 'users' 
+            ? 'px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white' 
+            : 'px-4 py-2 rounded-lg font-medium transition-colors bg-gray-200 text-gray-700';
+    }
 
     async function loadCompany() {
         try {
@@ -60,7 +181,7 @@
         }
     }
 
-    async function handleSave(e) {
+    async function handleSaveCompany(e) {
         e.preventDefault();
         const data = {
             nombre_empresa: document.getElementById('nombre_empresa').value,
@@ -78,11 +199,127 @@
             ui.toast('Error al guardar configuración', 'error');
         }
     }
+
+    // User Management Functions
+    async function loadUsers() {
+        try {
+            const res = await axios.get('/api/auth/users');
+            users = res.data;
+            renderUsers();
+        } catch (error) {
+            console.error('Error loading users:', error);
+        }
+    }
+
+    function renderUsers() {
+        const list = document.getElementById('users-list');
+        list.innerHTML = users.map(u => {
+            const permisos = JSON.parse(u.permisos || '[]');
+            return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${u.nombre}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${u.email}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 py-1 text-xs font-bold rounded-full ${u.rol === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}">
+                            ${u.rol}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate">
+                        ${permisos.length > 0 ? permisos.join(', ') : '<span class="italic">Ninguno</span>'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="editUser(${u.id})" class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteUser(${u.id})" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function openUserModal() {
+        document.getElementById('user-modal-title').innerText = 'Nuevo Usuario';
+        document.getElementById('user-form').reset();
+        document.getElementById('user-id').value = '';
+        document.getElementById('pwd-hint').classList.add('hidden');
+        document.getElementById('user-password').setAttribute('required', 'required');
+        document.getElementById('user-modal').classList.remove('hidden');
+    }
+
+    function closeUserModal() {
+        document.getElementById('user-modal').classList.add('hidden');
+    }
+
+    function editUser(id) {
+        const user = users.find(u => u.id === id);
+        if (!user) return;
+
+        document.getElementById('user-modal-title').innerText = 'Editar Usuario';
+        document.getElementById('user-id').value = user.id;
+        document.getElementById('user-nombre').value = user.nombre;
+        document.getElementById('user-email').value = user.email;
+        document.getElementById('user-rol').value = user.rol;
+        document.getElementById('user-password').value = '';
+        document.getElementById('user-password').removeAttribute('required');
+        document.getElementById('pwd-hint').classList.remove('hidden');
+
+        const permisos = JSON.parse(user.permisos || '[]');
+        document.querySelectorAll('input[name="permiso"]').forEach(cb => {
+            cb.checked = permisos.includes(cb.value);
+        });
+
+        document.getElementById('user-modal').classList.remove('hidden');
+    }
+
+    async function handleSaveUser(e) {
+        e.preventDefault();
+        const id = document.getElementById('user-id').value;
+        const permisos = Array.from(document.querySelectorAll('input[name="permiso"]:checked')).map(cb => cb.value);
+        
+        const data = {
+            nombre: document.getElementById('user-nombre').value,
+            email: document.getElementById('user-email').value,
+            rol: document.getElementById('user-rol').value,
+            permisos: permisos
+        };
+
+        const password = document.getElementById('user-password').value;
+        if (password) data.password = password;
+
+        try {
+            if (id) {
+                await axios.put(`/api/auth/users/${id}`, data);
+                ui.toast('Usuario actualizado');
+            } else {
+                await axios.post('/api/auth/register', data);
+                ui.toast('Usuario creado');
+            }
+            closeUserModal();
+            loadUsers();
+        } catch (error) {
+            ui.toast(error.response?.data?.message || 'Error al guardar usuario', 'error');
+        }
+    }
+
+    async function deleteUser(id) {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esta acción",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.delete(`/api/auth/users/${id}`);
+                ui.toast('Usuario eliminado');
+                loadUsers();
+            } catch (error) {
+                ui.toast(error.response?.data?.message || 'Error al eliminar usuario', 'error');
+            }
+        }
+    }
 </script>
-
-
-
-
-
-
-

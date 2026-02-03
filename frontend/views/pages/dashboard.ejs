@@ -1,47 +1,90 @@
 <div class="space-y-6">
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                    <i class="fas fa-file-invoice text-2xl"></i>
+    <div class="space-y-6">
+        <!-- Row 1: Quotes -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-file-invoice text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 font-medium">Cotizaciones</p>
+                        <p id="total-quotes" class="text-2xl font-bold text-gray-800">0</p>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm text-gray-500 font-medium">Cotizaciones Totales</p>
-                    <p id="total-quotes" class="text-2xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-check-circle text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 font-medium">Aceptadas</p>
+                        <p id="accepted-quotes" class="text-2xl font-bold text-gray-800">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-clock text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 font-medium">Pendientes</p>
+                        <p id="pending-quotes" class="text-2xl font-bold text-gray-800">0</p>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 text-green-600">
-                    <i class="fas fa-check-circle text-2xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm text-gray-500 font-medium">Aceptadas</p>
-                    <p id="accepted-quotes" class="text-2xl font-bold text-gray-800">0</p>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                    <i class="fas fa-clock text-2xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm text-gray-500 font-medium">Pendientes</p>
-                    <p id="pending-quotes" class="text-2xl font-bold text-gray-800">0</p>
+
+        <!-- Row 2: Invoices/Revenue -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-dollar-sign text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 font-medium">Total Facturado</p>
+                        <p id="total-revenue" class="text-2xl font-bold text-gray-800">$0.00</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                    <i class="fas fa-dollar-sign text-2xl"></i>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-emerald-100 text-emerald-600">
+                        <i class="fas fa-receipt text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 font-medium">F. Pagadas</p>
+                        <p id="paid-invoices-count" class="text-2xl font-bold text-gray-800">0</p>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm text-gray-500 font-medium">Total Facturado</p>
-                    <p id="total-revenue" class="text-2xl font-bold text-gray-800">$0.00</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-teal-100 text-teal-600">
+                        <i class="fas fa-money-bill-wave text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 font-medium">Monto Pagado</p>
+                        <p id="total-paid-amount" class="text-2xl font-bold text-gray-800">$0.00</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-hand-holding-usd text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500 font-medium">Retenciones Totales</p>
+                        <div class="flex flex-col">
+                            <p class="text-xs text-gray-400">ISR: <span id="total-isr-retention" class="font-bold text-gray-700">$0.00</span></p>
+                            <p class="text-xs text-gray-400">Sindical: <span id="total-union-retention" class="font-bold text-gray-700">$0.00</span></p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -82,6 +125,18 @@
                 </div>
             </div>
         </div>
+
+        <!-- Paid Invoices -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800">Facturas Pagadas Recientemente</h3>
+            </div>
+            <div class="p-6">
+                <div id="paid-invoices-list" class="space-y-4">
+                    <!-- Items will be loaded here -->
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -93,9 +148,10 @@
 
     async function loadData() {
         try {
-            const [resSummary, resPendingInvoices] = await Promise.all([
+            const [resSummary, resPendingInvoices, resPaidInvoices] = await Promise.all([
                 axios.get('/api/dashboard/resumen'),
-                axios.get('/api/dashboard/facturas-pendientes')
+                axios.get('/api/dashboard/facturas-pendientes'),
+                axios.get('/api/dashboard/facturas-pagadas')
             ]);
 
             const { summary, latestQuotes } = resSummary.data;
@@ -104,6 +160,10 @@
             document.getElementById('accepted-quotes').innerText = summary.acceptedQuotes;
             document.getElementById('pending-quotes').innerText = summary.pendingQuotes;
             document.getElementById('total-revenue').innerText = ui.formatCurrency(summary.totalRevenue);
+            document.getElementById('paid-invoices-count').innerText = summary.paidInvoicesCount;
+            document.getElementById('total-paid-amount').innerText = ui.formatCurrency(summary.totalPaidAmount);
+            document.getElementById('total-isr-retention').innerText = ui.formatCurrency(summary.totalISRRetention);
+            document.getElementById('total-union-retention').innerText = ui.formatCurrency(summary.totalUnionRetention);
 
             const latestList = document.getElementById('latest-quotes-list');
             latestList.innerHTML = latestQuotes.map(q => `
@@ -135,6 +195,30 @@
                                 <p class="text-sm font-bold text-gray-800">${inv.numero_factura}</p>
                                 <p class="text-xs text-gray-500">${inv.quote.cliente.nombre}</p>
                                 <p class="text-[10px] text-blue-600 font-medium">Folio: ${inv.quote.folio}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-black text-gray-800">${ui.formatCurrency(inv.quote.total)}</p>
+                            <a href="/cotizaciones/${inv.quote.id}" class="text-[10px] text-blue-500 hover:underline">Ver detalle</a>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const paidList = document.getElementById('paid-invoices-list');
+            if (resPaidInvoices.data.length === 0) {
+                paidList.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-4">No hay facturas pagadas</p>';
+            } else {
+                paidList.innerHTML = resPaidInvoices.data.map(inv => `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-xs">
+                                <i class="fas fa-check-double"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-bold text-gray-800">${inv.numero_factura}</p>
+                                <p class="text-xs text-gray-500">${inv.quote.cliente.nombre}</p>
+                                <p class="text-[10px] text-blue-600 font-medium">Pagado el: ${inv.fecha_pago ? ui.formatDate(inv.fecha_pago) : 'N/A'}</p>
                             </div>
                         </div>
                         <div class="text-right">

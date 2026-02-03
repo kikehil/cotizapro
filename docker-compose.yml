@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: cotizapro-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: cotiza_db
+      MYSQL_ROOT_PASSWORD: root_password_vps
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Opcional: Si pones tu backup en una carpeta ./init-db, se cargará automáticamente al iniciar
+      # - ./cotizapro_fix.sql:/docker-entrypoint-initdb.d/backup.sql
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cotizapro-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=mysql://root:root_password_vps@db:3306/cotiza_db
+      - PORT=3000
+      - NODE_ENV=production
+      # Agrega aquí tus otras variables del .env (JWT_SECRET, SMTP, etc.)
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:
+
+
+

@@ -18,6 +18,13 @@ const auth = {
         const user = localStorage.getItem('user');
         return user ? JSON.parse(user) : null;
     },
+    hasPermission(permission) {
+        const user = this.getUser();
+        if (!user) return false;
+        if (user.rol === 'ADMIN') return true;
+        const permisos = user.permisos || [];
+        return permisos.includes(permission);
+    },
     logout() {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');

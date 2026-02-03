@@ -64,6 +64,10 @@
                             <span>IVA (16%)</span>
                             <span id="quote-iva" class="font-medium"></span>
                         </div>
+                        <div id="retencion-row" class="flex justify-between text-gray-600 hidden">
+                            <span>RET ISR (1.25%)</span>
+                            <span id="quote-retencion" class="font-medium"></span>
+                        </div>
                         <div class="flex justify-between text-xl font-bold text-gray-800 border-t pt-3">
                             <span>Total</span>
                             <span id="quote-total" class="text-blue-600"></span>
@@ -84,7 +88,7 @@
                     <h4 class="font-bold text-blue-800 flex items-center">
                         <i class="fas fa-file-invoice mr-2"></i> Información de Facturación
                     </h4>
-                    <button onclick="openInvoiceModal()" class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                    <button id="btn-update-invoice" onclick="openInvoiceModal()" class="hidden text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
                         Actualizar Factura
                     </button>
                 </div>
@@ -103,6 +107,30 @@
                         </a>
                         <a id="inv-xml" href="#" target="_blank" class="hidden text-blue-600 hover:text-blue-800" title="Descargar XML">
                             <i class="fas fa-file-code fa-lg"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OC Section (Visible if accepted) -->
+            <div id="oc-section" class="hidden bg-purple-50 p-6 rounded-lg border border-purple-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="font-bold text-purple-800 flex items-center">
+                        <i class="fas fa-shopping-cart mr-2"></i> Orden de Compra (OC)
+                    </h4>
+                    <button id="btn-upload-oc" onclick="openOCModal()" class="hidden text-xs bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700">
+                        Cargar OC
+                    </button>
+                </div>
+                <div id="oc-info" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-purple-600 font-bold uppercase">No. Orden de Compra</p>
+                        <p id="oc-number-display" class="text-sm font-medium text-gray-800">No asignada</p>
+                    </div>
+                    <div class="flex items-center">
+                        <a id="oc-pdf-link" href="#" target="_blank" class="hidden text-red-600 hover:text-red-800 flex items-center" title="Ver OC">
+                            <i class="fas fa-file-pdf fa-lg mr-2"></i>
+                            <span class="text-sm font-medium">Ver Archivo OC</span>
                         </a>
                     </div>
                 </div>
@@ -150,11 +178,22 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">Estado de Pago</label>
-                <select id="invoice_estatus" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <select id="invoice_estatus" onchange="togglePaymentDateField()" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     <option value="Pendiente">Pendiente</option>
                     <option value="Pagada">Pagada</option>
                     <option value="Cancelada">Cancelada</option>
                 </select>
+            </div>
+            <div id="payment-date-container" class="hidden space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Fecha de Pago *</label>
+                    <input type="date" id="fecha_pago" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Retención Sindical ($)</label>
+                    <input type="number" id="retencion_sindical" step="any" value="0" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <p class="text-[10px] text-gray-400 mt-1">Ingrese el monto si hubo retención por cuota sindical.</p>
+                </div>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">Archivo PDF</label>
@@ -167,6 +206,32 @@
             <div class="flex justify-end space-x-3 pt-4 border-t">
                 <button type="button" onclick="closeInvoiceModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancelar</button>
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- OC Modal -->
+<div id="oc-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Cargar Orden de Compra</h3>
+            <button onclick="closeOCModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="oc-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Número de OC *</label>
+                <input type="text" id="oc_numero" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Archivo PDF *</label>
+                <input type="file" id="oc_file" accept=".pdf" required class="mt-1 block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" onclick="closeOCModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">Guardar OC</button>
             </div>
         </form>
     </div>
@@ -189,6 +254,8 @@
             renderQuote();
             if (quote.estado === 'Aceptada') {
                 loadInvoice();
+                document.getElementById('oc-section').classList.remove('hidden');
+                renderOC();
             }
         } catch (error) {
             ui.toast('Error al cargar cotización', 'error');
@@ -234,22 +301,94 @@
     }
 
     function openInvoiceModal() {
+        if (!quote.oc_numero) {
+            return ui.toast('Debe cargar una Orden de Compra (OC) antes de poder gestionar la factura', 'warning');
+        }
         if (currentInvoice) {
             document.getElementById('numero_factura').value = currentInvoice.numero_factura;
             document.getElementById('invoice_estatus').value = currentInvoice.estatus;
+            document.getElementById('retencion_sindical').value = currentInvoice.retencion_sindical || 0;
+            togglePaymentDateField();
         }
         document.getElementById('invoice-modal').classList.remove('hidden');
+    }
+
+    function togglePaymentDateField() {
+        const estatus = document.getElementById('invoice_estatus').value;
+        const container = document.getElementById('payment-date-container');
+        const dateInput = document.getElementById('fecha_pago');
+        
+        if (estatus === 'Pagada') {
+            container.classList.remove('hidden');
+            dateInput.setAttribute('required', 'required');
+        } else {
+            container.classList.add('hidden');
+            dateInput.removeAttribute('required');
+        }
     }
 
     function closeInvoiceModal() {
         document.getElementById('invoice-modal').classList.add('hidden');
     }
 
+    function openOCModal() {
+        if (quote.oc_numero) {
+            document.getElementById('oc_numero').value = quote.oc_numero;
+        }
+        document.getElementById('oc-modal').classList.remove('hidden');
+    }
+
+    function closeOCModal() {
+        document.getElementById('oc-modal').classList.add('hidden');
+    }
+
+    function renderOC() {
+        if (quote.oc_numero) {
+            document.getElementById('oc-number-display').innerText = quote.oc_numero;
+            if (quote.oc_url) {
+                const ocLink = document.getElementById('oc-pdf-link');
+                ocLink.href = quote.oc_url;
+                ocLink.classList.remove('hidden');
+            }
+        }
+    }
+
+    document.getElementById('oc-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('oc_numero', document.getElementById('oc_numero').value);
+        
+        const ocFile = document.getElementById('oc_file').files[0];
+        if (ocFile) formData.append('oc_file', ocFile);
+
+        ui.showLoading();
+        try {
+            await axios.post(`/api/cotizaciones/${quoteId}/oc`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            ui.hideLoading();
+            ui.toast('Orden de Compra guardada');
+            closeOCModal();
+            loadQuote(); // Recargar para actualizar UI y eventos
+        } catch (error) {
+            ui.hideLoading();
+            ui.toast(error.response?.data?.message || 'Error al guardar OC', 'error');
+        }
+    });
+
     document.getElementById('invoice-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData();
         formData.append('numero_factura', document.getElementById('numero_factura').value);
         formData.append('estatus', document.getElementById('invoice_estatus').value);
+        
+        const estatus = document.getElementById('invoice_estatus').value;
+        if (estatus === 'Pagada') {
+            const fechaPago = document.getElementById('fecha_pago').value;
+            if (!fechaPago) return ui.toast('La fecha de pago es obligatoria', 'warning');
+            formData.append('fecha_pago', fechaPago);
+            formData.append('retencion_sindical', document.getElementById('retencion_sindical').value || 0);
+        }
         
         const pdfFile = document.getElementById('pdf_file').files[0];
         if (pdfFile) formData.append('pdf', pdfFile);
@@ -282,6 +421,15 @@
         document.getElementById('quote-expiry').innerText = ui.formatDate(quote.fecha_vencimiento);
         document.getElementById('quote-subtotal').innerText = ui.formatCurrency(quote.subtotal);
         document.getElementById('quote-iva').innerText = ui.formatCurrency(quote.iva);
+        
+        const retencionRow = document.getElementById('retencion-row');
+        if (quote.retencion > 0) {
+            retencionRow.classList.remove('hidden');
+            document.getElementById('quote-retencion').innerText = ui.formatCurrency(quote.retencion);
+        } else {
+            retencionRow.classList.add('hidden');
+        }
+
         document.getElementById('quote-total').innerText = ui.formatCurrency(quote.total);
         document.getElementById('quote-notes').innerText = quote.notas || 'Sin notas adicionales.';
         
@@ -311,6 +459,14 @@
 
         document.getElementById('public-link').value = `${window.location.origin}/cotizacion/${quoteId}/public`;
         
+        // Control de permisos para botones
+        if (auth.hasPermission('cargar_oc')) {
+            document.getElementById('btn-upload-oc').classList.remove('hidden');
+        }
+        if (auth.hasPermission('cargar_factura') || auth.hasPermission('editar_factura')) {
+            document.getElementById('btn-update-invoice').classList.remove('hidden');
+        }
+
         renderActions();
     }
 
@@ -318,7 +474,7 @@
         const actionsEl = document.getElementById('status-actions');
         actionsEl.innerHTML = '';
         
-        if (quote.estado !== 'Aceptada') {
+        if (quote.estado !== 'Aceptada' && auth.hasPermission('crear_cotizacion')) {
             actionsEl.innerHTML += `
                 <a href="/cotizaciones/editar/${quoteId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 flex items-center">
                     <i class="fas fa-edit mr-2"></i> Editar
@@ -326,7 +482,7 @@
             `;
         }
 
-        if (quote.estado === 'Pendiente' || quote.estado === 'Enviada') {
+        if ((quote.estado === 'Pendiente' || quote.estado === 'Enviada') && auth.hasPermission('aceptar_cotizacion')) {
             actionsEl.innerHTML += `
                 <button onclick="updateStatus('Aceptada')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-150">Aceptar</button>
                 <button onclick="updateStatus('Rechazada')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-150">Rechazar</button>
