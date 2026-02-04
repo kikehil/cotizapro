@@ -8,6 +8,7 @@ const {
   duplicateQuote,
   generateQuotePDF,
   generateStatusReportPDF,
+  exportQuotesToExcel,
   sendQuoteEmail,
   getPublicQuote,
   acceptPublicQuote,
@@ -50,6 +51,7 @@ router.route('/')
   .post(createQuote);
 
 router.get('/reporte/estados', generateStatusReportPDF);
+router.get('/reporte/excel', exportQuotesToExcel);
 
 router.route('/:id')
   .get(getQuoteById)

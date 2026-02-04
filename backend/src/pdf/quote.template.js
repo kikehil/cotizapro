@@ -45,8 +45,8 @@ const quoteTemplate = (quote, company) => {
           </div>
           <p class="text-2xl font-bold text-blue-600">${quote.folio}</p>
           <div class="mt-4 text-sm text-gray-500 font-medium">
+            <p>Solicitante: ${quote.solicitante || 'No especificado'}</p>
             <p>Fecha: ${new Date(quote.fecha).toLocaleDateString('es-MX')}</p>
-            <p>Vencimiento: ${new Date(quote.fecha_vencimiento).toLocaleDateString('es-MX')}</p>
           </div>
         </div>
       </div>

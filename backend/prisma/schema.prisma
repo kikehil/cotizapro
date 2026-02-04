@@ -81,7 +81,8 @@ model Quote {
   id                 Int           @id @default(autoincrement())
   folio              String        @unique
   fecha              DateTime      @default(now())
-  fecha_vencimiento  DateTime
+  solicitante        String?
+  fecha_vencimiento  DateTime?
   cliente_id         Int
   cliente            Client        @relation(fields: [cliente_id], references: [id])
   contacto_cliente   String?

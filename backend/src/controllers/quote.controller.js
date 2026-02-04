@@ -7,6 +7,7 @@ const { quoteTemplate } = require('../pdf/quote.template');
 const { reportTemplate } = require('../pdf/report.template');
 const path = require('path');
 const fs = require('fs');
+const ExcelJS = require('exceljs');
 
 const generateFolio = async () => {
   const lastQuote = await prisma.quote.findFirst({
@@ -483,6 +484,68 @@ const generateStatusReportPDF = async (req, res, next) => {
   }
 };
 
+const exportQuotesToExcel = async (req, res, next) => {
+  try {
+    const quotes = await prisma.quote.findMany({
+      include: { 
+        cliente: true,
+        invoices: true
+      },
+      orderBy: { fecha: 'desc' }
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Cotizaciones');
+
+    worksheet.columns = [
+      { header: 'Folio', key: 'folio', width: 15 },
+      { header: 'Fecha', key: 'fecha', width: 15 },
+      { header: 'Cliente', key: 'cliente', width: 30 },
+      { header: 'Solicitante', key: 'solicitante', width: 25 },
+      { header: 'Subtotal', key: 'subtotal', width: 15 },
+      { header: 'IVA', key: 'iva', width: 15 },
+      { header: 'Retención ISR', key: 'retencion', width: 15 },
+      { header: 'Total', key: 'total', width: 15 },
+      { header: 'Estado', key: 'estado', width: 15 },
+      { header: 'OC', key: 'oc', width: 20 },
+      { header: 'Factura', key: 'factura', width: 20 }
+    ];
+
+    quotes.forEach(q => {
+      const invoice = q.invoices && q.invoices.length > 0 ? q.invoices[0] : null;
+      worksheet.addRow({
+        folio: q.folio,
+        fecha: new Date(q.fecha).toLocaleDateString('es-MX'),
+        cliente: q.cliente.nombre,
+        solicitante: q.solicitante || '-',
+        subtotal: q.subtotal,
+        iva: q.iva,
+        retencion: q.retencion || 0,
+        total: q.total,
+        estado: q.estado,
+        oc: q.oc_numero || 'SOC',
+        factura: invoice ? invoice.numero_factura : 'SF'
+      });
+    });
+
+    // Estilo para el encabezado
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=cotizaciones.xlsx');
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getQuotes,
   getQuoteById,
@@ -492,6 +555,7 @@ module.exports = {
   duplicateQuote,
   generateQuotePDF,
   generateStatusReportPDF,
+  exportQuotesToExcel,
   sendQuoteEmail,
   getPublicQuote,
   acceptPublicQuote,
