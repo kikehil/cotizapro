@@ -33,8 +33,8 @@
                     <div class="text-right">
                         <span id="quote-status" class="px-3 py-1 text-sm font-bold rounded-full"></span>
                         <div class="mt-4 text-right">
+                            <p class="text-sm text-gray-600">Solicitante: <span id="quote-solicitante" class="font-bold text-gray-800"></span></p>
                             <p class="text-sm text-gray-600">Fecha: <span id="quote-date" class="font-medium"></span></p>
-                            <p class="text-sm text-gray-600">Vence: <span id="quote-expiry" class="font-medium text-red-600"></span></p>
                         </div>
                     </div>
                 </div>
@@ -417,8 +417,8 @@
         document.getElementById('client-name').innerText = quote.cliente.nombre;
         document.getElementById('client-rfc').innerText = `RFC: ${quote.cliente.rfc || 'N/A'}`;
         document.getElementById('client-email').innerText = quote.cliente.email || '';
+        document.getElementById('quote-solicitante').innerText = quote.solicitante || 'No especificado';
         document.getElementById('quote-date').innerText = ui.formatDate(quote.fecha);
-        document.getElementById('quote-expiry').innerText = ui.formatDate(quote.fecha_vencimiento);
         document.getElementById('quote-subtotal').innerText = ui.formatCurrency(quote.subtotal);
         document.getElementById('quote-iva').innerText = ui.formatCurrency(quote.iva);
         

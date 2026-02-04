@@ -11,15 +11,39 @@
     <style>
         [v-cloak] { display: none; }
         .sidebar-item-active { background-color: #3b82f6; color: white; }
+        
+        /* Sidebar transition */
+        #sidebar-container {
+            transition: all 0.3s ease-in-out;
+            z-index: 50;
+        }
+        .sidebar-collapsed #sidebar-container {
+            margin-left: -16rem; /* 64 * 4px */
+        }
+        #sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        .sidebar-open #sidebar-overlay {
+            display: block;
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden" id="app-layout">
+        <!-- Sidebar Overlay -->
+        <div id="sidebar-overlay" onclick="ui.toggleSidebar()"></div>
+
         <!-- Sidebar -->
-        <%- include('../components/sidebar') %>
+        <div id="sidebar-container" class="flex-shrink-0 w-64">
+            <%- include('../components/sidebar') %>
+        </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col overflow-hidden" onclick="ui.closeSidebarIfOutside(event)">
             <!-- Header -->
             <%- include('../components/header') %>
 

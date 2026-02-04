@@ -1,7 +1,9 @@
 <div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <h3 class="text-2xl font-bold text-gray-800">Cotizaciones</h3>
+    <div class="flex justify-end items-center">
         <div class="flex space-x-2">
+            <button onclick="downloadExcelReport()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg shadow-sm transition duration-150 flex items-center border border-gray-300">
+                <i class="fas fa-file-excel mr-2 text-green-600"></i> Reporte Excel
+            </button>
             <button onclick="downloadStatusReport()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg shadow-sm transition duration-150 flex items-center border border-gray-300">
                 <i class="fas fa-file-pdf mr-2 text-red-600"></i> Reporte PDF
             </button>
@@ -29,6 +31,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Folio</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">OC</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Solicitante</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
@@ -101,6 +104,9 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         ${invText}
                     </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        ${q.solicitante || '-'}
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ui.formatDate(q.fecha)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">${q.cliente.nombre}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">${ui.formatCurrency(q.total)}</td>
@@ -132,6 +138,11 @@
     async function downloadStatusReport() {
         const token = auth.getToken();
         window.open(`/api/cotizaciones/reporte/estados?token=${token}`, '_blank');
+    }
+
+    async function downloadExcelReport() {
+        const token = auth.getToken();
+        window.open(`/api/cotizaciones/reporte/excel?token=${token}`, '_blank');
     }
 
     async function sendEmail(id) {

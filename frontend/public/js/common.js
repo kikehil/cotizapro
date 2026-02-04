@@ -42,6 +42,23 @@ const ui = {
             title: message
         });
     },
+    toggleSidebar() {
+        const layout = document.getElementById('app-layout');
+        layout.classList.toggle('sidebar-collapsed');
+        document.body.classList.toggle('sidebar-open');
+    },
+    closeSidebarIfOutside(event) {
+        const layout = document.getElementById('app-layout');
+        const sidebar = document.getElementById('sidebar-container');
+        
+        // Solo contraer si no está colapsado y el click fue fuera del botón de toggle
+        if (!layout.classList.contains('sidebar-collapsed') && 
+            !sidebar.contains(event.target) && 
+            !event.target.closest('button[onclick="ui.toggleSidebar()"]')) {
+            layout.classList.add('sidebar-collapsed');
+            document.body.classList.remove('sidebar-open');
+        }
+    },
     initInactivityTimer() {
         let timer;
         const timeout = 20 * 60 * 1000; // 20 minutos
