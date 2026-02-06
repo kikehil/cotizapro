@@ -13,9 +13,9 @@ const generateFolio = async () => {
   const lastQuote = await prisma.quote.findFirst({
     orderBy: { id: 'desc' }
   });
-  
+
   if (!lastQuote) return 'Q-0001';
-  
+
   const lastNumber = parseInt(lastQuote.folio.split('-')[1]);
   const newNumber = (lastNumber + 1).toString().padStart(4, '0');
   return `Q-${newNumber}`;
@@ -95,6 +95,18 @@ const updateQuote = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { items, ...quoteData } = req.body;
+
+    // Handle status dates logic
+    if (quoteData.estado) {
+      if (quoteData.estado === 'Pendiente') {
+        quoteData.fecha_aceptacion = null;
+        quoteData.fecha_rechazo = null;
+      } else if (quoteData.estado === 'Aceptada') {
+        quoteData.fecha_aceptacion = new Date();
+      } else if (quoteData.estado === 'Rechazada') {
+        quoteData.fecha_rechazo = new Date();
+      }
+    }
 
     await prisma.quoteItem.deleteMany({ where: { cotizacion_id: parseInt(id) } });
 
@@ -223,9 +235,9 @@ const generateQuotePDF = async (req, res, next) => {
 
     const htmlContent = quoteTemplate(quote, { ...company, logoBase64 });
     const outputPath = path.join(__dirname, `../../uploads/pdfs/${quote.folio}.pdf`);
-    
+
     await generatePDF(htmlContent, outputPath);
-    
+
     res.download(outputPath);
   } catch (error) {
     next(error);
@@ -263,16 +275,16 @@ const sendQuoteEmail = async (req, res, next) => {
 
     const htmlContent = quoteTemplate(quote, { ...company, logoBase64 });
     const outputPath = path.join(__dirname, `../../uploads/pdfs/${quote.folio}.pdf`);
-    
+
     try {
       console.log('Generando PDF para el adjunto del correo...');
       await generatePDF(htmlContent, outputPath);
     } catch (pdfError) {
       console.error('Error al generar PDF para correo:', pdfError);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Error al generar el PDF de la cotización', 
-        error: pdfError.message 
+      return res.status(500).json({
+        success: false,
+        message: 'Error al generar el PDF de la cotización',
+        error: pdfError.message
       });
     }
 
@@ -301,10 +313,10 @@ const sendQuoteEmail = async (req, res, next) => {
       });
     } catch (emailError) {
       console.error('Error al enviar correo via SMTP:', emailError);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Error al enviar el correo electrónico (SMTP)', 
-        error: emailError.message 
+      return res.status(500).json({
+        success: false,
+        message: 'Error al enviar el correo electrónico (SMTP)',
+        error: emailError.message
       });
     }
 
@@ -326,10 +338,10 @@ const sendQuoteEmail = async (req, res, next) => {
   } catch (error) {
     console.error('Error detallado en sendQuoteEmail:', error);
     if (!res.headersSent) {
-      res.status(500).json({ 
-        success: false, 
-        message: 'Error al procesar el envío del correo', 
-        error: error.message 
+      res.status(500).json({
+        success: false,
+        message: 'Error al procesar el envío del correo',
+        error: error.message
       });
     }
   }
@@ -448,7 +460,7 @@ const uploadOC = async (req, res, next) => {
 const generateStatusReportPDF = async (req, res, next) => {
   try {
     const quotes = await prisma.quote.findMany({
-      include: { 
+      include: {
         cliente: true,
         invoices: true
       },
@@ -475,9 +487,9 @@ const generateStatusReportPDF = async (req, res, next) => {
 
     const htmlContent = reportTemplate(quotes, { ...company, logoBase64 });
     const outputPath = path.join(__dirname, `../../uploads/pdfs/reporte-cotizaciones.pdf`);
-    
+
     await generatePDF(htmlContent, outputPath);
-    
+
     res.download(outputPath);
   } catch (error) {
     next(error);
@@ -487,7 +499,7 @@ const generateStatusReportPDF = async (req, res, next) => {
 const exportQuotesToExcel = async (req, res, next) => {
   try {
     const quotes = await prisma.quote.findMany({
-      include: { 
+      include: {
         cliente: true,
         invoices: true
       },

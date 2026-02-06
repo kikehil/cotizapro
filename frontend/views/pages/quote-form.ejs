@@ -27,8 +27,16 @@
                         <input type="text" id="solicitante" placeholder="Nombre de quien solicita" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Validez</label>
                         <input type="text" id="validez" placeholder="Ej. 15 días naturales" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div id="estado-container" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700">Estado</label>
+                        <select id="estado" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Enviada">Enviada</option>
+                            <option value="Aceptada">Aceptada</option>
+                            <option value="Rechazada">Rechazada</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -146,6 +154,7 @@
             });
 
             if (quoteId) {
+                document.getElementById('estado-container').classList.remove('hidden');
                 loadQuoteData();
             }
         } catch (error) {
@@ -165,6 +174,7 @@
             document.getElementById('condiciones_pago').value = quote.condiciones_pago || '';
             document.getElementById('notas').value = quote.notas || '';
             document.getElementById('retencion').value = quote.retencion || 0;
+            document.getElementById('estado').value = quote.estado || 'Pendiente';
 
             items = quote.items.map(item => ({
                 id: Date.now() + Math.random(),
@@ -293,6 +303,7 @@
             validez: document.getElementById('validez').value,
             condiciones_pago: document.getElementById('condiciones_pago').value,
             notas: document.getElementById('notas').value,
+            estado: document.getElementById('estado').value,
             subtotal,
             iva,
             retencion,
