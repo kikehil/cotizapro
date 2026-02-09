@@ -1,0 +1,72 @@
+lujo estándar (la mayoría de las veces)
+1) En tu PC: guarda y sube a Git
+git add .
+git commit -m "tu mensaje"
+git push
+
+2) En el VPS: bajar cambios
+cd /var/www/html/cotizapro
+git pull
+
+3) Reconstruir y levantar contenedores
+docker compose up -d --build
+docker compose ps
+
+4) Ver logs si algo falla
+docker compose logs -f --tail 200 app
+docker compose logs -f --tail 200 db
+
+Si tocaste BACKEND (Node/Prisma)
+
+Además de lo anterior, normalmente haces:
+
+A) Migraciones Prisma (si cambiaste schema)
+docker compose exec -T app sh -lc "cd backend && npx prisma migrate deploy"
+
+B) Regenerar Prisma client (si aplica)
+docker compose exec -T app sh -lc "cd backend && npx prisma generate"
+
+
+Tip: Si haces docker compose up -d --build, muchas veces ya lo corre en el build si tu Dockerfile está bien, pero este comando te asegura.
+
+Si tocaste FRONTEND (Next/React)
+
+Con rebuild basta:
+
+docker compose up -d --build app
+
+Si solo cambiaste .env
+
+No necesitas build (a veces sí, pero normalmente no). Solo recrear el contenedor:
+
+cd /var/www/html/cotizapro
+docker compose up -d --force-recreate app
+
+
+Si también cambiaste variables de DB:
+
+docker compose up -d --force-recreate
+
+Si tocaste docker-compose.yml
+
+Siempre:
+
+cd /var/www/html/cotizapro
+docker compose down
+docker compose up -d --build
+
+El “comando combo” que casi siempre te sirve
+
+Este es mi favorito para producción cuando cambiaste código:
+
+cd /var/www/html/cotizapro \
+&& git pull \
+&& docker compose up -d --build \
+&& docker compose ps
+
+Recomendación PRO (para no regarla)
+
+Antes de rebuild, revisa rápido qué cambió:
+
+git log -1 --oneline
+git status

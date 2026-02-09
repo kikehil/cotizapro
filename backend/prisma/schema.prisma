@@ -35,7 +35,7 @@ model User {
   email          String       @unique
   password       String
   rol            Role         @default(VENTAS)
-  permisos       String       @default("[]") // JSON string array of permissions
+  permisos       String?      @default("[]") // JSON string array of permissions
   fecha_creacion DateTime     @default(now())
   quotes         Quote[]
   events         QuoteEvent[]
