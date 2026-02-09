@@ -20,8 +20,11 @@ Si tocaste BACKEND (Node/Prisma)
 
 Además de lo anterior, normalmente haces:
 
-A) Migraciones Prisma (si cambiaste schema)
-docker compose exec -T app sh -lc "cd backend && npx prisma migrate deploy"
+A) Actualizar esquema DB (Schema Push)
+docker compose exec -T app sh -lc "cd backend && npx prisma db push"
+
+** IMPORTANTE SI TIENES ERROR DE LOGIN (Invalid prisma.user.findUnique) **
+Ejecuta el paso A obligatoriamente para corregir el esquema de permisos.
 
 B) Regenerar Prisma client (si aplica)
 docker compose exec -T app sh -lc "cd backend && npx prisma generate"
