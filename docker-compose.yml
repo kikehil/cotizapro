@@ -7,7 +7,7 @@ services:
       MYSQL_DATABASE: cotiza_db
       MYSQL_ROOT_PASSWORD: root_password_vps
     ports:
-      - "3306:3306"
+      - "3388:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       # Opcional: Si pones tu backup en una carpeta ./init-db, se cargará automáticamente al iniciar
