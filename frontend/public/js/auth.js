@@ -66,10 +66,14 @@ axios.interceptors.response.use(
     response => response,
     async error => {
         const originalRequest = error.config;
-        if (error.response.status === 401 && !originalRequest._retry) {
+        if (error.response && error.response.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/api/auth/refresh')) {
             originalRequest._retry = true;
             try {
                 const refreshToken = auth.getRefreshToken();
+                if (!refreshToken) {
+                    auth.logout();
+                    return Promise.reject(error);
+                }
                 const res = await axios.post('/api/auth/refresh', { refreshToken });
                 if (res.status === 200) {
                     auth.setToken(res.data.accessToken);
