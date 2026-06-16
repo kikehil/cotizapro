@@ -66,7 +66,12 @@ axios.interceptors.response.use(
     response => response,
     async error => {
         const originalRequest = error.config;
-        if (error.response && error.response.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/api/auth/refresh')) {
+        
+        // Evitar interceptar peticiones de login o refresh para prevenir bucles infinitos
+        const isAuthRequest = originalRequest && originalRequest.url && 
+            (originalRequest.url.includes('/login') || originalRequest.url.includes('/refresh'));
+
+        if (error.response && error.response.status === 401 && originalRequest && !originalRequest._retry && !isAuthRequest) {
             originalRequest._retry = true;
             try {
                 const refreshToken = auth.getRefreshToken();
