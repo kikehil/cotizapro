@@ -222,7 +222,7 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm font-black text-gray-800">${ui.formatCurrency(inv.quote.total)}</p>
+                            <p class="text-sm font-black text-gray-800">${ui.formatCurrency(inv.quote.total - (inv.retencion_sindical || 0))}</p>
                             <a href="/cotizaciones/${inv.quote.id}" class="text-[10px] text-blue-500 hover:underline">Ver detalle</a>
                         </div>
                     </div>

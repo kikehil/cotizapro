@@ -61,7 +61,7 @@ const getSummary = async (req, res, next) => {
         totalRevenue: totalRevenue._sum.total || 0,
         pendingQuotes,
         paidInvoicesCount,
-        totalPaidAmount: totalPaidAmount._sum.total || 0,
+        totalPaidAmount: (totalPaidAmount._sum.total || 0) - (totalUnionRetention._sum.retencion_sindical || 0),
         totalISRRetention: totalISRRetention._sum.retencion || 0,
         totalUnionRetention: totalUnionRetention._sum.retencion_sindical || 0
       },
